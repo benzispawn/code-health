@@ -4,10 +4,10 @@ Code Health can print a terminal summary and generate report files.
 
 ## Terminal Summary
 
-`code-health scan` prints a compact summary:
+`code-health scan` prints a compact summary with colored ratings:
 
 ```txt
-Project Health: 74/100
+Project Health: 74/100 (Medium)
 
 Critical Findings:
 - billing.service.ts has cognitive complexity 31
@@ -17,13 +17,59 @@ Top Refactor Priorities:
 1. billing.service.ts
 2. subscription.service.ts
 
-Architecture Score: 68/100
-Complexity Score: 71/100
-Maintainability Score: 76/100
-Testability Score: 61/100
+Score Breakdown:
+- Architecture: 68/100 (Medium)
+- Complexity: 71/100 (Medium)
+- Maintainability: 76/100 (Medium)
+- Coupling: 88/100 (Good)
+- Testability: 61/100 (Medium)
+
+Risk Signals:
+- Duplication: 15% (Bad)
+- Max Dependency Depth: 8 (Medium)
+- API Surface Size: 353 (Extreme Bad)
+- Package Cycles: 1 (Bad)
+- Line Coverage: 98% (Excellent)
+- Branch Coverage: 93% (Excellent)
 ```
 
 Use the terminal summary for quick local feedback.
+
+## Duplication Inspection
+
+Use the dedicated command when the summary shows high duplication:
+
+```bash
+code-health duplication
+```
+
+Example output:
+
+```txt
+Duplication: 15% (Bad)
+
+Top Duplicate Blocks:
+
+1. 8 lines repeated in 2 locations (High)
+   - src/billing/billing.service.ts:42-49
+   - src/billing/subscription.service.ts:88-95
+```
+
+You can also append duplicate block details to the normal scan output:
+
+```bash
+code-health scan --duplication
+```
+
+Useful options:
+
+```bash
+code-health duplication --limit 5
+code-health duplication --show-code
+code-health duplication --json
+```
+
+Default output shows locations only. `--show-code` prints the normalized duplicated block text. `--json` returns machine-readable duplication data.
 
 ## JSON Report
 
@@ -55,6 +101,7 @@ Main sections:
 | `files` | Per-file metrics, API surface counts, coverage, duplication, and scores |
 | `domains` | Domain-level summary |
 | `architecture` | Violations, file cycles, package cycles, dependency graph |
+| `duplication` | Project duplication percent and repeated block locations |
 | `hotspots` | Refactor priority ranking |
 | `recommendations` | Suggested next actions |
 
@@ -77,6 +124,8 @@ Use Markdown for:
 - pull request artifacts
 - architecture review notes
 - lightweight team sharing
+
+Markdown reports include a `## Duplication` section with repeated block locations.
 
 ## HTML Report
 

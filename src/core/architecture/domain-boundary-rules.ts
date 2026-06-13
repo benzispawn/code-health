@@ -1,6 +1,9 @@
-import { CodeHealthConfig } from '../../shared/types/config';
+import type { CodeHealthConfig } from '../../shared/types/config';
 
-export function detectDomain(relativePath: string, config: CodeHealthConfig): string | undefined {
+export function detectDomain(
+  relativePath: string,
+  config: CodeHealthConfig,
+): string | undefined {
   const sourceRoot = config.project.sourceRoot.replace(/\/$/, '');
   const parts = relativePath.split('/');
   const sourceIndex = parts.indexOf(sourceRoot);

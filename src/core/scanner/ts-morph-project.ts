@@ -1,8 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { Project, SourceFile } from 'ts-morph';
+import type { SourceFile } from 'ts-morph';
+import { Project } from 'ts-morph';
 
-export function createTsMorphProject(cwd: string, sourceFiles: string[]): Project {
+export function createTsMorphProject(
+  cwd: string,
+  sourceFiles: string[],
+): Project {
   const tsConfigFilePath = path.resolve(cwd, 'tsconfig.json');
   const project = fs.existsSync(tsConfigFilePath)
     ? new Project({
@@ -23,7 +27,10 @@ export function createTsMorphProject(cwd: string, sourceFiles: string[]): Projec
   return project;
 }
 
-export function getRequiredSourceFile(project: Project, filePath: string): SourceFile {
+export function getRequiredSourceFile(
+  project: Project,
+  filePath: string,
+): SourceFile {
   const sourceFile = project.getSourceFile(filePath);
   if (!sourceFile) {
     throw new Error(`Unable to load source file: ${filePath}`);

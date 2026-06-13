@@ -5,16 +5,31 @@ import { scanProject } from '../../src/core/scanner/project-scanner';
 
 describe('MVP metrics integration', () => {
   it('reports duplication, comments, logical LOC, coverage, and dependency depth', () => {
-    const cwd = path.resolve(process.cwd(), 'tests/fixtures/projects/mvp-metrics');
-    const report = scanProject({ cwd, config: DEFAULT_CONFIG, includeGit: false });
-    const controller = report.files.find((file) => file.path === 'src/billing/billing.controller.ts');
-    const service = report.files.find((file) => file.path === 'src/billing/billing.service.ts');
-    const helper = report.files.find((file) => file.path === 'src/billing/billing.helper.ts');
+    const cwd = path.resolve(
+      process.cwd(),
+      'tests/fixtures/projects/mvp-metrics',
+    );
+    const report = scanProject({
+      cwd,
+      config: DEFAULT_CONFIG,
+      includeGit: false,
+    });
+    const controller = report.files.find(
+      (file) => file.path === 'src/billing/billing.controller.ts',
+    );
+    const service = report.files.find(
+      (file) => file.path === 'src/billing/billing.service.ts',
+    );
+    const helper = report.files.find(
+      (file) => file.path === 'src/billing/billing.helper.ts',
+    );
 
     expect(controller?.metrics.commentLines).toBe(1);
     expect(controller?.metrics.commentRatio).toBeGreaterThan(0);
     expect(controller?.metrics.logicalLoc).toBeGreaterThan(0);
-    expect(controller?.metrics.physicalLoc).toBeGreaterThanOrEqual(controller?.loc ?? 0);
+    expect(controller?.metrics.physicalLoc).toBeGreaterThanOrEqual(
+      controller?.loc ?? 0,
+    );
     expect(controller?.metrics.lineCoverage).toBe(75);
     expect(controller?.metrics.branchCoverage).toBe(50);
 

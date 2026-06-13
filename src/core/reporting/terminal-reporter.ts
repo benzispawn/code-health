@@ -1,4 +1,4 @@
-import { ProjectHealthReport } from '../../shared/types/project-health';
+import type { ProjectHealthReport } from '../../shared/types/project-health';
 import {
   formatRating,
   rateApiSurface,
@@ -19,11 +19,17 @@ export function formatTerminalSummary(report: ProjectHealthReport): string[] {
     'Critical Findings:',
   ];
 
-  const critical = report.architecture.violations.filter((violation) => violation.severity === 'error');
+  const critical = report.architecture.violations.filter(
+    (violation) => violation.severity === 'error',
+  );
   if (critical.length === 0) {
     lines.push('- None');
   } else {
-    lines.push(...critical.slice(0, 8).map((violation) => `- ${violation.file}: ${violation.message}`));
+    lines.push(
+      ...critical
+        .slice(0, 8)
+        .map((violation) => `- ${violation.file}: ${violation.message}`),
+    );
   }
 
   lines.push('', 'Top Refactor Priorities:');
@@ -33,7 +39,10 @@ export function formatTerminalSummary(report: ProjectHealthReport): string[] {
     lines.push(
       ...report.hotspots
         .slice(0, 5)
-        .map((hotspot, index) => `${index + 1}. ${hotspot.file} - ${hotspot.priority} (${hotspot.refactorPriority}/100)`),
+        .map(
+          (hotspot, index) =>
+            `${index + 1}. ${hotspot.file} - ${hotspot.priority} (${hotspot.refactorPriority}/100)`,
+        ),
     );
   }
 

@@ -1,4 +1,4 @@
-import { CodeHealthConfig } from './config';
+import type { CodeHealthConfig } from './config';
 
 export interface ProjectHealthReport {
   project: ProjectInfo;
@@ -171,7 +171,12 @@ export interface HotspotAnalysis {
 
 export interface RefactorRecommendation {
   file: string;
-  type: 'extract-method' | 'split-service' | 'fix-architecture' | 'add-tests' | 'reduce-coupling';
+  type:
+    | 'extract-method'
+    | 'split-service'
+    | 'fix-architecture'
+    | 'add-tests'
+    | 'reduce-coupling';
   priority: 'Low' | 'Medium' | 'High' | 'Very High';
   reason: string;
 }

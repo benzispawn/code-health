@@ -1,6 +1,8 @@
 import { scanFromFlags } from './command-utils';
 
-export async function hotspotsCommand(flags: Record<string, string | boolean>): Promise<void> {
+export async function hotspotsCommand(
+  flags: Record<string, string | boolean>,
+): Promise<void> {
   const report = await scanFromFlags(flags);
 
   if (report.hotspots.length === 0) {

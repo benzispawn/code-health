@@ -96,9 +96,9 @@ function printHelp(): void {
 
 Usage:
   code-health init
-  code-health scan [--domain billing] [--config code-health.config.ts]
+  code-health scan [--domain billing] [--duplication] [--config code-health.config.ts]
   code-health score
-  code-health duplication [--show-code] [--limit 10]
+  code-health duplication [--show-code] [--limit 10] [--json]
   code-health report [--format json|markdown|html]
   code-health validate-architecture
   code-health hotspots

@@ -37,7 +37,9 @@ interface MeaningfulLine {
 const DEFAULT_MIN_BLOCK_LINES = 2;
 const DEFAULT_MIN_LINE_LENGTH = 20;
 
-export function calculateDuplicationMetrics(sources: DuplicationInput[]): DuplicationMetrics {
+export function calculateDuplicationMetrics(
+  sources: DuplicationInput[],
+): DuplicationMetrics {
   const lineOccurrences = new Map<string, Set<string>>();
   const fileLineCounts = new Map<string, number>();
   const fileDuplicatedLineCounts = new Map<string, number>();
@@ -55,7 +57,10 @@ export function calculateDuplicationMetrics(sources: DuplicationInput[]): Duplic
   for (const { path, source } of sources) {
     for (const { value: normalized } of meaningfulLines(source)) {
       if ((lineOccurrences.get(normalized)?.size ?? 0) > 1) {
-        fileDuplicatedLineCounts.set(path, (fileDuplicatedLineCounts.get(path) ?? 0) + 1);
+        fileDuplicatedLineCounts.set(
+          path,
+          (fileDuplicatedLineCounts.get(path) ?? 0) + 1,
+        );
       }
     }
   }
@@ -69,22 +74,32 @@ export function calculateDuplicationMetrics(sources: DuplicationInput[]): Duplic
     const fileDuplicated = fileDuplicatedLineCounts.get(path) ?? 0;
     total += fileTotal;
     duplicated += fileDuplicated;
-    fileDuplicationPercent.set(path, fileTotal === 0 ? 0 : Math.round((fileDuplicated / fileTotal) * 100));
+    fileDuplicationPercent.set(
+      path,
+      fileTotal === 0 ? 0 : Math.round((fileDuplicated / fileTotal) * 100),
+    );
   }
 
   return {
-    projectDuplicationPercent: total === 0 ? 0 : Math.round((duplicated / total) * 100),
+    projectDuplicationPercent:
+      total === 0 ? 0 : Math.round((duplicated / total) * 100),
     fileDuplicationPercent,
     groups,
   };
 }
 
-function calculateDuplicationGroups(sources: DuplicationInput[]): DuplicationGroup[] {
+function calculateDuplicationGroups(
+  sources: DuplicationInput[],
+): DuplicationGroup[] {
   const windows = new Map<string, DuplicationOccurrence[]>();
 
   for (const { path, source } of sources) {
     const lines = meaningfulLines(source);
-    for (let index = 0; index <= lines.length - DEFAULT_MIN_BLOCK_LINES; index += 1) {
+    for (
+      let index = 0;
+      index <= lines.length - DEFAULT_MIN_BLOCK_LINES;
+      index += 1
+    ) {
       const block = lines.slice(index, index + DEFAULT_MIN_BLOCK_LINES);
       const normalizedText = block.map((line) => line.value).join('\n');
       const occurrences = windows.get(normalizedText) ?? [];
@@ -107,23 +122,27 @@ function calculateDuplicationGroups(sources: DuplicationInput[]): DuplicationGro
     }))
     .filter((group) => group.occurrences.length > 1);
 
-  return mergeAdjacentGroups(windowGroups)
-    .sort((left, right) => {
-      const leftScore = left.lineCount * left.occurrences.length;
-      const rightScore = right.lineCount * right.occurrences.length;
-      return rightScore - leftScore;
-    });
+  return mergeAdjacentGroups(windowGroups).sort((left, right) => {
+    const leftScore = left.lineCount * left.occurrences.length;
+    const rightScore = right.lineCount * right.occurrences.length;
+    return rightScore - leftScore;
+  });
 }
 
 function mergeAdjacentGroups(groups: DuplicationGroup[]): DuplicationGroup[] {
-  const sorted = [...groups].sort((left, right) => occurrenceShape(left).localeCompare(occurrenceShape(right)));
+  const sorted = [...groups].sort((left, right) =>
+    occurrenceShape(left).localeCompare(occurrenceShape(right)),
+  );
   const merged: DuplicationGroup[] = [];
 
   for (const group of sorted) {
     const previous = merged[merged.length - 1];
     if (previous && canMergeGroups(previous, group)) {
       previous.lineCount = Math.max(
-        ...previous.occurrences.map((occurrence, index) => group.occurrences[index].lineEnd - occurrence.lineStart + 1),
+        ...previous.occurrences.map(
+          (occurrence, index) =>
+            group.occurrences[index].lineEnd - occurrence.lineStart + 1,
+        ),
       );
       previous.normalizedText = `${previous.normalizedText}\n${lastLine(group.normalizedText)}`;
       previous.fingerprint = fingerprint(previous.normalizedText);
@@ -131,16 +150,25 @@ function mergeAdjacentGroups(groups: DuplicationGroup[]): DuplicationGroup[] {
         ...occurrence,
         lineEnd: group.occurrences[index].lineEnd,
       }));
-      previous.severity = severityFor(previous.lineCount, previous.occurrences.length);
+      previous.severity = severityFor(
+        previous.lineCount,
+        previous.occurrences.length,
+      );
       continue;
     }
-    merged.push({ ...group, occurrences: group.occurrences.map((occurrence) => ({ ...occurrence })) });
+    merged.push({
+      ...group,
+      occurrences: group.occurrences.map((occurrence) => ({ ...occurrence })),
+    });
   }
 
   return merged;
 }
 
-function canMergeGroups(left: DuplicationGroup, right: DuplicationGroup): boolean {
+function canMergeGroups(
+  left: DuplicationGroup,
+  right: DuplicationGroup,
+): boolean {
   if (left.occurrences.length !== right.occurrences.length) {
     return false;
   }
@@ -156,7 +184,9 @@ function canMergeGroups(left: DuplicationGroup, right: DuplicationGroup): boolea
 }
 
 function occurrenceShape(group: DuplicationGroup): string {
-  const fileShape = group.occurrences.map((occurrence) => occurrence.file).join('|');
+  const fileShape = group.occurrences
+    .map((occurrence) => occurrence.file)
+    .join('|');
   const firstLine = group.occurrences[0]?.lineStart ?? 0;
   return `${fileShape}:${String(firstLine).padStart(8, '0')}`;
 }
@@ -197,17 +227,27 @@ function isMeaningfulLine(line: string): boolean {
   return true;
 }
 
-function mergeOccurrences(occurrences: DuplicationOccurrence[]): DuplicationOccurrence[] {
+function mergeOccurrences(
+  occurrences: DuplicationOccurrence[],
+): DuplicationOccurrence[] {
   const unique = new Map<string, DuplicationOccurrence>();
   for (const occurrence of occurrences) {
-    unique.set(`${occurrence.file}:${occurrence.lineStart}:${occurrence.lineEnd}`, occurrence);
+    unique.set(
+      `${occurrence.file}:${occurrence.lineStart}:${occurrence.lineEnd}`,
+      occurrence,
+    );
   }
   return [...unique.values()].sort((left, right) =>
-    `${left.file}:${left.lineStart}`.localeCompare(`${right.file}:${right.lineStart}`),
+    `${left.file}:${left.lineStart}`.localeCompare(
+      `${right.file}:${right.lineStart}`,
+    ),
   );
 }
 
-function severityFor(lineCount: number, occurrenceCount: number): DuplicationGroup['severity'] {
+function severityFor(
+  lineCount: number,
+  occurrenceCount: number,
+): DuplicationGroup['severity'] {
   const score = lineCount * occurrenceCount;
   if (score >= 12) {
     return 'High';

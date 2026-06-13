@@ -1,6 +1,6 @@
 import { Controller, Post } from '@nestjs/common';
-import { BillingService } from './billing.service';
-import { PlanRepository } from './repositories/plan.repository';
+import type { BillingService } from './billing.service';
+import type { PlanRepository } from './repositories/plan.repository';
 import { CurrentUser } from './decorators/current-user.decorator';
 
 @Controller('billing')

@@ -133,6 +133,14 @@ Thresholds define when a metric starts creating score penalties.
 
 Stricter teams can lower these values. Legacy projects may start higher and ratchet down over time.
 
+`duplicationPercent` affects file scoring. Detailed duplicate block detection currently uses built-in defaults:
+
+- minimum meaningful line length: 20 characters
+- minimum block size: 2 meaningful lines
+- ignores imports, comments, short lines, and braces-only lines
+
+Use `code-health duplication` to inspect the locations behind the percentage.
+
 ## Scoring Weights
 
 Weights must add up to 1.

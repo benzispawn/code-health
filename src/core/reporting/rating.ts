@@ -1,4 +1,10 @@
-export type Rating = 'Excellent' | 'Good' | 'Medium' | 'Bad' | 'Extreme Bad' | 'Unknown';
+export type Rating =
+  | 'Excellent'
+  | 'Good'
+  | 'Medium'
+  | 'Bad'
+  | 'Extreme Bad'
+  | 'Unknown';
 
 const COLORS: Record<Exclude<Rating, 'Unknown'>, string> = {
   Excellent: '\u001b[32m',

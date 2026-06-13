@@ -1,4 +1,4 @@
-import { BillingService } from './billing.service';
+import type { BillingService } from './billing.service';
 
 // Public API entry point for billing workflows.
 export class BillingController {

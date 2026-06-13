@@ -5,7 +5,10 @@ export function calculateCognitiveComplexity(source: string): number {
 
   for (const line of lines) {
     const trimmed = line.trim();
-    if (/^(if|for|while|switch|catch)\b/.test(trimmed) || /\b(if|for|while|catch)\s*\(/.test(trimmed)) {
+    if (
+      /^(if|for|while|switch|catch)\b/.test(trimmed) ||
+      /\b(if|for|while|catch)\s*\(/.test(trimmed)
+    ) {
       score += 1 + nesting;
     }
     if (/\belse\b/.test(trimmed)) {

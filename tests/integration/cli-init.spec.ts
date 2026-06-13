@@ -21,6 +21,8 @@ describe('code-health init', () => {
     const configPath = path.join(cwd, 'code-health.config.ts');
 
     expect(output).toContain('created code-health.config.ts');
-    expect(fs.readFileSync(configPath, 'utf8')).toContain("decorator: ['*.decorator.ts']");
+    expect(fs.readFileSync(configPath, 'utf8')).toContain(
+      "decorator: ['*.decorator.ts']",
+    );
   });
 });

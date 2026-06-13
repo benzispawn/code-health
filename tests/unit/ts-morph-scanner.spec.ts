@@ -5,10 +5,21 @@ import { scanProject } from '../../src/core/scanner/project-scanner';
 
 describe('ts-morph scanner', () => {
   it('resolves tsconfig path aliases for architecture checks', () => {
-    const cwd = path.resolve(process.cwd(), 'tests/fixtures/projects/path-alias-invalid');
-    const report = scanProject({ cwd, config: DEFAULT_CONFIG, includeGit: false });
+    const cwd = path.resolve(
+      process.cwd(),
+      'tests/fixtures/projects/path-alias-invalid',
+    );
+    const report = scanProject({
+      cwd,
+      config: DEFAULT_CONFIG,
+      includeGit: false,
+    });
 
-    expect(report.files.find((file) => file.path === 'src/billing/billing.controller.ts')?.imports).toEqual(
+    expect(
+      report.files.find(
+        (file) => file.path === 'src/billing/billing.controller.ts',
+      )?.imports,
+    ).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           source: '@billing/repositories/plan.repository',
@@ -29,10 +40,21 @@ describe('ts-morph scanner', () => {
   });
 
   it('resolves simple barrel exports to the declaring file', () => {
-    const cwd = path.resolve(process.cwd(), 'tests/fixtures/projects/barrel-invalid');
-    const report = scanProject({ cwd, config: DEFAULT_CONFIG, includeGit: false });
+    const cwd = path.resolve(
+      process.cwd(),
+      'tests/fixtures/projects/barrel-invalid',
+    );
+    const report = scanProject({
+      cwd,
+      config: DEFAULT_CONFIG,
+      includeGit: false,
+    });
 
-    expect(report.files.find((file) => file.path === 'src/billing/billing.controller.ts')?.imports).toEqual(
+    expect(
+      report.files.find(
+        (file) => file.path === 'src/billing/billing.controller.ts',
+      )?.imports,
+    ).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           source: './repositories',

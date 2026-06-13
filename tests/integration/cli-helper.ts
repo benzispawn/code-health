@@ -1,6 +1,9 @@
 import { runCli } from '../../dist/src/cli/main';
 
-export async function runCliAndCapture(argv: string[], cwd?: string): Promise<string> {
+export async function runCliAndCapture(
+  argv: string[],
+  cwd?: string,
+): Promise<string> {
   const originalLog = console.log;
   const originalError = console.error;
   const originalCwd = process.cwd();

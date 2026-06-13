@@ -1,4 +1,4 @@
-import { BillingHelper } from './billing.helper';
+import type { BillingHelper } from './billing.helper';
 
 export class BillingService {
   constructor(private readonly helper: BillingHelper) {}

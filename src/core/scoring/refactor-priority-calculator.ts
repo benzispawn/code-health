@@ -1,4 +1,8 @@
-import { ArchitectureAnalysis, FileAnalysis, RefactorRecommendation } from '../../shared/types/project-health';
+import type {
+  ArchitectureAnalysis,
+  FileAnalysis,
+  RefactorRecommendation,
+} from '../../shared/types/project-health';
 import { priorityLabel } from '../git/hotspot-calculator';
 
 export function createRefactorRecommendations(
@@ -16,7 +20,9 @@ export function createRefactorRecommendations(
       recommendations.push({
         file: file.path,
         type: 'extract-method',
-        priority: priorityLabel(Math.min(100, worstFunction.cognitiveComplexity * 4)),
+        priority: priorityLabel(
+          Math.min(100, worstFunction.cognitiveComplexity * 4),
+        ),
         reason: `${worstFunction.name} has cognitive complexity ${worstFunction.cognitiveComplexity}`,
       });
     }
@@ -49,7 +55,9 @@ export function createRefactorRecommendations(
     });
   }
 
-  return recommendations.sort((left, right) => priorityRank(right.priority) - priorityRank(left.priority));
+  return recommendations.sort(
+    (left, right) => priorityRank(right.priority) - priorityRank(left.priority),
+  );
 }
 
 function priorityRank(priority: RefactorRecommendation['priority']): number {

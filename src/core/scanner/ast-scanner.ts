@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { CodeHealthConfig } from '../../shared/types/config';
-import {
+import type { CodeHealthConfig } from '../../shared/types/config';
+import type {
   ClassAnalysis,
   FileAnalysis,
   FunctionAnalysis,
@@ -16,9 +16,21 @@ import { estimateNPathComplexity } from '../metrics/complexity/npath.metric';
 import { calculateMaintainabilityIndex } from '../metrics/maintainability/maintainability-index.metric';
 import { calculateFanOut } from '../metrics/coupling/fan-out.metric';
 
-const CONTROL_NAMES = new Set(['if', 'for', 'while', 'switch', 'catch', 'function']);
+const CONTROL_NAMES = new Set([
+  'if',
+  'for',
+  'while',
+  'switch',
+  'catch',
+  'function',
+]);
 
-export function scanFile(cwd: string, filePath: string, allFiles: string[], config: CodeHealthConfig): FileAnalysis {
+export function scanFile(
+  cwd: string,
+  filePath: string,
+  allFiles: string[],
+  config: CodeHealthConfig,
+): FileAnalysis {
   const source = fs.readFileSync(filePath, 'utf8');
   const relativePath = relativePosix(cwd, filePath);
   const imports = extractImports(cwd, filePath, source, allFiles);
@@ -28,9 +40,15 @@ export function scanFile(cwd: string, filePath: string, allFiles: string[], conf
   const physicalLoc = countPhysicalLoc(source);
   const logicalLoc = countLogicalLoc(source);
   const commentLines = countCommentLines(source);
-  const cyclomaticComplexity = sum(functions.map((item) => item.cyclomaticComplexity));
-  const cognitiveComplexity = sum(functions.map((item) => item.cognitiveComplexity));
-  const npathComplexity = sum(functions.map((item) => item.npathComplexity ?? 0));
+  const cyclomaticComplexity = sum(
+    functions.map((item) => item.cyclomaticComplexity),
+  );
+  const cognitiveComplexity = sum(
+    functions.map((item) => item.cognitiveComplexity),
+  );
+  const npathComplexity = sum(
+    functions.map((item) => item.npathComplexity ?? 0),
+  );
   const maintainabilityIndex = calculateMaintainabilityIndex({
     loc,
     cyclomaticComplexity,
@@ -54,11 +72,14 @@ export function scanFile(cwd: string, filePath: string, allFiles: string[], conf
       physicalLoc,
       logicalLoc,
       commentLines,
-      commentRatio: physicalLoc === 0 ? 0 : Math.round((commentLines / physicalLoc) * 100),
+      commentRatio:
+        physicalLoc === 0 ? 0 : Math.round((commentLines / physicalLoc) * 100),
       duplicationPercent: 0,
       dependencyDepth: 0,
       publicExportCount: countPublicExports(source),
-      controllerCount: classes.filter((item) => item.decorators.includes('Controller')).length,
+      controllerCount: classes.filter((item) =>
+        item.decorators.includes('Controller'),
+      ).length,
       endpointCount: countEndpointDecorators(source),
       fanIn: 0,
       fanOut: calculateFanOut(imports),
@@ -67,9 +88,15 @@ export function scanFile(cwd: string, filePath: string, allFiles: string[], conf
   };
 }
 
-function extractImports(cwd: string, filePath: string, source: string, allFiles: string[]): ImportAnalysis[] {
+function extractImports(
+  cwd: string,
+  filePath: string,
+  source: string,
+  allFiles: string[],
+): ImportAnalysis[] {
   const imports: ImportAnalysis[] = [];
-  const importPattern = /import(?:[\s\S]*?)from\s+['"]([^'"]+)['"]|import\s*\(\s*['"]([^'"]+)['"]\s*\)|require\(\s*['"]([^'"]+)['"]\s*\)/g;
+  const importPattern =
+    /import(?:[\s\S]*?)from\s+['"]([^'"]+)['"]|import\s*\(\s*['"]([^'"]+)['"]\s*\)|require\(\s*['"]([^'"]+)['"]\s*\)/g;
   let match = importPattern.exec(source);
 
   while (match) {
@@ -77,7 +104,9 @@ function extractImports(cwd: string, filePath: string, source: string, allFiles:
     const isRelative = sourcePath.startsWith('.');
     imports.push({
       source: sourcePath,
-      resolvedPath: isRelative ? resolveRelativeImport(cwd, filePath, sourcePath, allFiles) : undefined,
+      resolvedPath: isRelative
+        ? resolveRelativeImport(cwd, filePath, sourcePath, allFiles)
+        : undefined,
       isRelative,
     });
     match = importPattern.exec(source);
@@ -86,7 +115,12 @@ function extractImports(cwd: string, filePath: string, source: string, allFiles:
   return imports;
 }
 
-function resolveRelativeImport(cwd: string, filePath: string, sourcePath: string, allFiles: string[]): string | undefined {
+function resolveRelativeImport(
+  cwd: string,
+  filePath: string,
+  sourcePath: string,
+  allFiles: string[],
+): string | undefined {
   const absoluteBase = path.resolve(path.dirname(filePath), sourcePath);
   const candidates = [
     `${absoluteBase}.ts`,
@@ -143,7 +177,10 @@ function extractFunctions(source: string): FunctionAnalysis[] {
   return [...functions, ...extractConstFunctions(source, functions)];
 }
 
-function extractConstFunctions(source: string, existing: FunctionAnalysis[]): FunctionAnalysis[] {
+function extractConstFunctions(
+  source: string,
+  existing: FunctionAnalysis[],
+): FunctionAnalysis[] {
   const existingNames = new Set(existing.map((item) => item.name));
   const functions: FunctionAnalysis[] = [];
   const pattern =
@@ -158,8 +195,12 @@ function extractConstFunctions(source: string, existing: FunctionAnalysis[]): Fu
     }
 
     const bodyStart = source.indexOf('{', match.index);
-    const bodyEnd = bodyStart === -1 ? match.index : findMatchingBrace(source, bodyStart);
-    const body = bodyEnd === -1 ? source.slice(match.index, source.indexOf('\n', match.index)) : source.slice(bodyStart, bodyEnd + 1);
+    const bodyEnd =
+      bodyStart === -1 ? match.index : findMatchingBrace(source, bodyStart);
+    const body =
+      bodyEnd === -1
+        ? source.slice(match.index, source.indexOf('\n', match.index))
+        : source.slice(bodyStart, bodyEnd + 1);
     const lineStart = lineNumberAt(source, match.index);
     const lineEnd = bodyEnd === -1 ? lineStart : lineNumberAt(source, bodyEnd);
     const parameters = splitParameters(match[2] ?? match[3] ?? '');
@@ -184,23 +225,30 @@ function extractConstFunctions(source: string, existing: FunctionAnalysis[]): Fu
 
 function extractClasses(source: string): ClassAnalysis[] {
   const classes: ClassAnalysis[] = [];
-  const pattern = /((?:@\w+(?:\([^)]*\))?\s*)*)export\s+class\s+([A-Za-z_$][\w$]*)|((?:@\w+(?:\([^)]*\))?\s*)*)class\s+([A-Za-z_$][\w$]*)/g;
+  const pattern =
+    /((?:@\w+(?:\([^)]*\))?\s*)*)export\s+class\s+([A-Za-z_$][\w$]*)|((?:@\w+(?:\([^)]*\))?\s*)*)class\s+([A-Za-z_$][\w$]*)/g;
   let match = pattern.exec(source);
 
   while (match) {
     const decoratorsSource = match[1] ?? match[3] ?? '';
     const name = match[2] ?? match[4] ?? 'AnonymousClass';
     const bodyStart = source.indexOf('{', match.index);
-    const bodyEnd = bodyStart === -1 ? match.index : findMatchingBrace(source, bodyStart);
+    const bodyEnd =
+      bodyStart === -1 ? match.index : findMatchingBrace(source, bodyStart);
     const body = bodyEnd === -1 ? '' : source.slice(bodyStart, bodyEnd + 1);
 
     const methods = extractFunctions(body).map((method) => method.name);
     const lineStart = lineNumberAt(source, match.index);
-    const lineEnd = bodyEnd === -1 ? lineNumberAt(source, match.index) : lineNumberAt(source, bodyEnd);
+    const lineEnd =
+      bodyEnd === -1
+        ? lineNumberAt(source, match.index)
+        : lineNumberAt(source, bodyEnd);
 
     classes.push({
       name,
-      decorators: [...decoratorsSource.matchAll(/@([A-Za-z_$][\w$]*)/g)].map((decorator) => decorator[1]),
+      decorators: [...decoratorsSource.matchAll(/@([A-Za-z_$][\w$]*)/g)].map(
+        (decorator) => decorator[1],
+      ),
       lineStart,
       lineEnd,
       loc: Math.max(1, lineEnd - lineStart + 1),
@@ -257,7 +305,10 @@ function splitParameters(parameters: string): string[] {
   if (!parameters.trim()) {
     return [];
   }
-  return parameters.split(',').map((parameter) => parameter.trim()).filter(Boolean);
+  return parameters
+    .split(',')
+    .map((parameter) => parameter.trim())
+    .filter(Boolean);
 }
 
 function lineNumberAt(source: string, index: number): number {
@@ -278,7 +329,11 @@ function countPhysicalLoc(source: string): number {
 function countLogicalLoc(source: string): number {
   return source
     .split(/\r?\n/)
-    .filter((line) => /(;|\b(if|for|while|switch|try|catch|return|throw|break|continue)\b)/.test(line.trim())).length;
+    .filter((line) =>
+      /(;|\b(if|for|while|switch|try|catch|return|throw|break|continue)\b)/.test(
+        line.trim(),
+      ),
+    ).length;
 }
 
 function countCommentLines(source: string): number {
@@ -312,11 +367,18 @@ function countCommentLines(source: string): number {
 }
 
 function countPublicExports(source: string): number {
-  return source.match(/\bexport\s+(class|function|const|let|var|interface|type|enum)\b/g)?.length ?? 0;
+  return (
+    source.match(
+      /\bexport\s+(class|function|const|let|var|interface|type|enum)\b/g,
+    )?.length ?? 0
+  );
 }
 
 function countEndpointDecorators(source: string): number {
-  return source.match(/@(Get|Post|Put|Patch|Delete|Options|Head|All)\b/g)?.length ?? 0;
+  return (
+    source.match(/@(Get|Post|Put|Patch|Delete|Options|Head|All)\b/g)?.length ??
+    0
+  );
 }
 
 function sum(values: number[]): number {

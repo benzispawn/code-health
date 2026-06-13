@@ -1,5 +1,9 @@
 export type ProjectFramework = 'nestjs' | 'typescript';
-export type ArchitectureStyle = 'layered' | 'clean-architecture' | 'hexagonal' | 'modular-monolith';
+export type ArchitectureStyle =
+  | 'layered'
+  | 'clean-architecture'
+  | 'hexagonal'
+  | 'modular-monolith';
 export type ReportFormat = 'json' | 'markdown' | 'html';
 
 export interface CodeHealthConfig {

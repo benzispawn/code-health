@@ -1,12 +1,19 @@
-import { CodeHealthConfig } from '../../shared/types/config';
-import {
+import type { CodeHealthConfig } from '../../shared/types/config';
+import type {
   ArchitectureAnalysis,
   ArchitectureViolation,
   FileAnalysis,
 } from '../../shared/types/project-health';
-import { buildDependencyGraph, buildPackageDependencyGraph, findCircularDependencies } from './dependency-graph';
+import {
+  buildDependencyGraph,
+  buildPackageDependencyGraph,
+  findCircularDependencies,
+} from './dependency-graph';
 
-export function validateArchitecture(files: FileAnalysis[], config: CodeHealthConfig): ArchitectureAnalysis {
+export function validateArchitecture(
+  files: FileAnalysis[],
+  config: CodeHealthConfig,
+): ArchitectureAnalysis {
   const violations: ArchitectureViolation[] = [];
   const filesByPath = new Map(files.map((file) => [file.path, file]));
 
@@ -31,7 +38,9 @@ export function validateArchitecture(files: FileAnalysis[], config: CodeHealthCo
 
   const dependencyGraph = buildDependencyGraph(files);
   const circularDependencies = findCircularDependencies(dependencyGraph);
-  const packageCycles = findCircularDependencies(buildPackageDependencyGraph(dependencyGraph));
+  const packageCycles = findCircularDependencies(
+    buildPackageDependencyGraph(dependencyGraph),
+  );
 
   for (const cycle of circularDependencies) {
     violations.push({
@@ -51,7 +60,10 @@ export function validateArchitecture(files: FileAnalysis[], config: CodeHealthCo
     });
   }
 
-  const penalty = violations.reduce((total, violation) => total + (violation.severity === 'error' ? 12 : 5), 0);
+  const penalty = violations.reduce(
+    (total, violation) => total + (violation.severity === 'error' ? 12 : 5),
+    0,
+  );
 
   return {
     score: Math.max(0, 100 - penalty),
@@ -72,7 +84,11 @@ function validateLayerRules(
   }
 
   return config.architecture.rules
-    .filter((rule) => rule.from === file.layer && rule.disallow.includes(target.layer as string))
+    .filter(
+      (rule) =>
+        rule.from === file.layer &&
+        rule.disallow.includes(target.layer as string),
+    )
     .map((rule) => ({
       file: file.path,
       importedFile: target.path,
@@ -82,7 +98,10 @@ function validateLayerRules(
     }));
 }
 
-function validateDomainBoundary(file: FileAnalysis, target: FileAnalysis): ArchitectureViolation | undefined {
+function validateDomainBoundary(
+  file: FileAnalysis,
+  target: FileAnalysis,
+): ArchitectureViolation | undefined {
   if (!file.domain || !target.domain || file.domain === target.domain) {
     return undefined;
   }

@@ -93,6 +93,32 @@ Code Health normalizes maintainability index to a 0-100 score.
 
 Low maintainability usually means several signals are present at once: file length, complexity, and too many functions.
 
+### Duplication
+
+Duplication is the percentage of meaningful code lines that also appear elsewhere in the scanned project. The duplication command also reports repeated blocks with file and line ranges.
+
+| Percent | Rating |
+| ---: | --- |
+| 0-2 | Excellent |
+| 3-5 | Good |
+| 6-10 | Medium |
+| 11-20 | Bad |
+| 21+ | Extreme Bad |
+
+Inspect duplication with:
+
+```bash
+code-health duplication
+```
+
+Or append details to a scan:
+
+```bash
+code-health scan --duplication
+```
+
+Code Health ignores imports, short lines, braces-only lines, and comments when detecting duplicate blocks.
+
 ### File Length
 
 | Lines | Rating |

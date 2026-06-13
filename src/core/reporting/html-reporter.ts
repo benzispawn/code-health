@@ -1,9 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { ProjectHealthReport } from '../../shared/types/project-health';
+import type { ProjectHealthReport } from '../../shared/types/project-health';
 import { formatMarkdownReport } from './markdown-reporter';
 
-export function writeHtmlReport(report: ProjectHealthReport, outputDir: string): string {
+export function writeHtmlReport(
+  report: ProjectHealthReport,
+  outputDir: string,
+): string {
   fs.mkdirSync(outputDir, { recursive: true });
   const filePath = path.join(outputDir, 'code-health-report.html');
   const markdown = escapeHtml(formatMarkdownReport(report));

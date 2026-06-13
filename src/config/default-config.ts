@@ -1,4 +1,4 @@
-import { CodeHealthConfig } from '../shared/types/config';
+import type { CodeHealthConfig } from '../shared/types/config';
 
 export const DEFAULT_CONFIG: CodeHealthConfig = {
   project: {

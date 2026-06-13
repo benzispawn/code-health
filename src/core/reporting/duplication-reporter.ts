@@ -1,4 +1,4 @@
-import { ProjectHealthReport } from '../../shared/types/project-health';
+import type { ProjectHealthReport } from '../../shared/types/project-health';
 import { formatRating, rateDuplication } from './rating';
 
 export interface DuplicationFormatOptions {
@@ -22,16 +22,24 @@ export function formatDuplicationReport(
     return lines;
   }
 
-  for (const [index, group] of report.duplication.groups.slice(0, limit).entries()) {
+  for (const [index, group] of report.duplication.groups
+    .slice(0, limit)
+    .entries()) {
     lines.push(
       '',
       `${index + 1}. ${group.lineCount} lines repeated in ${group.occurrences.length} locations (${group.severity})`,
     );
     for (const occurrence of group.occurrences) {
-      lines.push(`   - ${occurrence.file}:${occurrence.lineStart}-${occurrence.lineEnd}`);
+      lines.push(
+        `   - ${occurrence.file}:${occurrence.lineStart}-${occurrence.lineEnd}`,
+      );
     }
     if (options.showCode) {
-      lines.push('', '   Block:', ...group.normalizedText.split('\n').map((line) => `   ${line}`));
+      lines.push(
+        '',
+        '   Block:',
+        ...group.normalizedText.split('\n').map((line) => `   ${line}`),
+      );
     }
   }
 

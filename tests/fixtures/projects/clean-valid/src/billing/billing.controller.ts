@@ -1,5 +1,5 @@
 import { Controller, Post } from '@nestjs/common';
-import { BillingService } from './billing.service';
+import type { BillingService } from './billing.service';
 import { CurrentUser } from './decorators/current-user.decorator';
 
 @Controller('billing')

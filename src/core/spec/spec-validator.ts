@@ -33,7 +33,10 @@ export function extractSpecExpectations(specText: string): SpecExpectation[] {
     }
 
     const indent = line.search(/\S/);
-    while (sectionStack.length > 0 && sectionStack[sectionStack.length - 1].indent >= indent) {
+    while (
+      sectionStack.length > 0 &&
+      sectionStack[sectionStack.length - 1].indent >= indent
+    ) {
       sectionStack.pop();
     }
 
@@ -43,14 +46,18 @@ export function extractSpecExpectations(specText: string): SpecExpectation[] {
       continue;
     }
 
-    const valueMatch = line.match(/^\s*(?:-\s*)?([A-Za-z_-][\w-]*):\s*([A-Za-z_$][\w$]*)\s*$/);
+    const valueMatch = line.match(
+      /^\s*(?:-\s*)?([A-Za-z_-][\w-]*):\s*([A-Za-z_$][\w$]*)\s*$/,
+    );
     if (!valueMatch) {
       continue;
     }
 
     const [, key, value] = valueMatch;
     const nearestSection = [...sectionStack].reverse()[0];
-    const parentSection = [...sectionStack].reverse().find((section) => IMPLEMENTATION_SECTIONS.has(section.key));
+    const parentSection = [...sectionStack]
+      .reverse()
+      .find((section) => IMPLEMENTATION_SECTIONS.has(section.key));
 
     if (key === 'handler' && parentSection) {
       expectations.push({ name: value, kind: 'method' });

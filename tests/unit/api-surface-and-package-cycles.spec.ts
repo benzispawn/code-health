@@ -5,8 +5,15 @@ import { scanProject } from '../../src/core/scanner/project-scanner';
 
 describe('API surface and package cycle metrics', () => {
   it('counts public exports, controllers, and endpoints', () => {
-    const cwd = path.resolve(process.cwd(), 'tests/fixtures/projects/clean-valid');
-    const report = scanProject({ cwd, config: DEFAULT_CONFIG, includeGit: false });
+    const cwd = path.resolve(
+      process.cwd(),
+      'tests/fixtures/projects/clean-valid',
+    );
+    const report = scanProject({
+      cwd,
+      config: DEFAULT_CONFIG,
+      includeGit: false,
+    });
 
     expect(report.summary.publicExportCount).toBe(3);
     expect(report.summary.controllerCount).toBe(1);
@@ -15,8 +22,15 @@ describe('API surface and package cycle metrics', () => {
   });
 
   it('detects package-level cycles', () => {
-    const cwd = path.resolve(process.cwd(), 'tests/fixtures/projects/package-cycle');
-    const report = scanProject({ cwd, config: DEFAULT_CONFIG, includeGit: false });
+    const cwd = path.resolve(
+      process.cwd(),
+      'tests/fixtures/projects/package-cycle',
+    );
+    const report = scanProject({
+      cwd,
+      config: DEFAULT_CONFIG,
+      includeGit: false,
+    });
 
     expect(report.summary.packageCycleCount).toBeGreaterThan(0);
     expect(report.architecture.packageCycles).toEqual(

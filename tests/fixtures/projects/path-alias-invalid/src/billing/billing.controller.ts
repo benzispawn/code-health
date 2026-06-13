@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { PlanRepository } from '@billing/repositories/plan.repository';
+import type { PlanRepository } from '@billing/repositories/plan.repository';
 
 @Controller('billing')
 export class BillingController {
