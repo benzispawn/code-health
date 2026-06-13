@@ -5,19 +5,22 @@ export function calculateCognitiveComplexity(source: string): number {
 
   for (const line of lines) {
     const trimmed = line.trim();
-    if (/^(if|for|while|switch|catch)\b/.test(trimmed) || /\b(if|for|while|catch)\s*\(/.test(trimmed)) {
+    if (
+      /^(if|for|while|switch|catch)\b/.test(trimmed) ||
+      /\b(if|for|while|catch)\s*\(/.test(trimmed)
+    ) {
       score += 1 + nesting;
     }
     if (/\belse\b/.test(trimmed)) {
       score += 1;
     }
-    if (trimmed.includes('&&') || trimmed.includes('||')) {
+    if (trimmed.includes("&&") || trimmed.includes("||")) {
       score += 1;
     }
-    if (trimmed.endsWith('{')) {
+    if (trimmed.endsWith("{")) {
       nesting += 1;
     }
-    if (trimmed.startsWith('}')) {
+    if (trimmed.startsWith("}")) {
       nesting = Math.max(0, nesting - 1);
     }
   }

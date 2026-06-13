@@ -1,48 +1,48 @@
-import { CodeHealthConfig } from '../shared/types/config';
+import type { CodeHealthConfig } from "../shared/types/config";
 
 export const DEFAULT_CONFIG: CodeHealthConfig = {
   project: {
-    name: 'nestjs-project',
-    framework: 'nestjs',
-    sourceRoot: 'src',
-    architecture: 'layered',
+    name: "nestjs-project",
+    framework: "nestjs",
+    sourceRoot: "src",
+    architecture: "layered",
   },
   spec: {
     enabled: true,
-    file: './domain.spec.yaml',
+    file: "./domain.spec.yaml",
   },
   scan: {
-    include: ['src/**/*.ts'],
+    include: ["src/**/*.ts"],
     exclude: [
-      '**/*.spec.ts',
-      '**/*.test.ts',
-      '**/*.module.ts',
-      '**/node_modules/**',
-      '**/dist/**',
+      "**/*.spec.ts",
+      "**/*.test.ts",
+      "**/*.module.ts",
+      "**/node_modules/**",
+      "**/dist/**",
     ],
   },
   architecture: {
     layers: {
-      controller: ['*.controller.ts'],
-      service: ['*.service.ts'],
-      repository: ['*.repository.ts', '*/repositories/*.ts'],
-      dto: ['*.dto.ts'],
-      entity: ['*.entity.ts'],
-      guard: ['*.guard.ts'],
-      interceptor: ['*.interceptor.ts'],
-      decorator: ['*.decorator.ts'],
-      pipe: ['*.pipe.ts'],
-      domain: ['*/domain/**/*.ts'],
-      infrastructure: ['*/infrastructure/**/*.ts'],
+      controller: ["*.controller.ts"],
+      service: ["*.service.ts"],
+      repository: ["*.repository.ts", "*/repositories/*.ts"],
+      dto: ["*.dto.ts"],
+      entity: ["*.entity.ts"],
+      guard: ["*.guard.ts"],
+      interceptor: ["*.interceptor.ts"],
+      decorator: ["*.decorator.ts"],
+      pipe: ["*.pipe.ts"],
+      domain: ["*/domain/**/*.ts"],
+      infrastructure: ["*/infrastructure/**/*.ts"],
     },
     rules: [
       {
-        from: 'controller',
-        disallow: ['repository'],
+        from: "controller",
+        disallow: ["repository"],
       },
       {
-        from: 'domain',
-        disallow: ['infrastructure'],
+        from: "domain",
+        disallow: ["infrastructure"],
       },
     ],
   },
@@ -63,7 +63,7 @@ export const DEFAULT_CONFIG: CodeHealthConfig = {
     testabilityWeight: 0.15,
   },
   reports: {
-    outputDir: './reports/code-health',
-    formats: ['json', 'markdown'],
+    outputDir: "./reports/code-health",
+    formats: ["json", "markdown"],
   },
 };

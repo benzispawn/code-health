@@ -1,4 +1,4 @@
-import { CodeHealthConfig } from './config';
+import type { CodeHealthConfig } from "./config";
 
 export interface ProjectHealthReport {
   project: ProjectInfo;
@@ -124,7 +124,7 @@ export interface ArchitectureViolation {
   importedFile?: string;
   rule: string;
   message: string;
-  severity: 'warning' | 'error';
+  severity: "warning" | "error";
 }
 
 export interface CircularDependency {
@@ -151,7 +151,7 @@ export interface DuplicationGroupAnalysis {
   normalizedText: string;
   occurrences: DuplicationOccurrenceAnalysis[];
   lineCount: number;
-  severity: 'Low' | 'Medium' | 'High';
+  severity: "Low" | "Medium" | "High";
 }
 
 export interface DuplicationOccurrenceAnalysis {
@@ -166,12 +166,17 @@ export interface HotspotAnalysis {
   churnScore: number;
   architectureRisk: number;
   refactorPriority: number;
-  priority: 'Low' | 'Medium' | 'High' | 'Very High';
+  priority: "Low" | "Medium" | "High" | "Very High";
 }
 
 export interface RefactorRecommendation {
   file: string;
-  type: 'extract-method' | 'split-service' | 'fix-architecture' | 'add-tests' | 'reduce-coupling';
-  priority: 'Low' | 'Medium' | 'High' | 'Very High';
+  type:
+    | "extract-method"
+    | "split-service"
+    | "fix-architecture"
+    | "add-tests"
+    | "reduce-coupling";
+  priority: "Low" | "Medium" | "High" | "Very High";
   reason: string;
 }

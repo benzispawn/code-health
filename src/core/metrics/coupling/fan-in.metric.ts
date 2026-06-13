@@ -1,4 +1,4 @@
-import { FileAnalysis } from '../../../shared/types/project-health';
+import type { FileAnalysis } from "../../../shared/types/project-health";
 
 export function applyFanIn(files: FileAnalysis[]): FileAnalysis[] {
   const fanIn = new Map<string, number>();
@@ -8,7 +8,10 @@ export function applyFanIn(files: FileAnalysis[]): FileAnalysis[] {
       if (!imported.resolvedPath) {
         continue;
       }
-      fanIn.set(imported.resolvedPath, (fanIn.get(imported.resolvedPath) ?? 0) + 1);
+      fanIn.set(
+        imported.resolvedPath,
+        (fanIn.get(imported.resolvedPath) ?? 0) + 1,
+      );
     }
   }
 

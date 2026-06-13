@@ -1,23 +1,29 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { CodeHealthConfig } from '../../shared/types/config';
-import { relativePosix, toPosixPath } from '../../shared/fs/path-utils';
+import fs from "node:fs";
+import path from "node:path";
+import type { CodeHealthConfig } from "../../shared/types/config";
+import { relativePosix, toPosixPath } from "../../shared/fs/path-utils";
 
-export function findSourceFiles(cwd: string, config: CodeHealthConfig, domain?: string): string[] {
+export function findSourceFiles(
+  cwd: string,
+  config: CodeHealthConfig,
+  domain?: string,
+): string[] {
   const sourceRoot = path.resolve(cwd, config.project.sourceRoot);
   if (!fs.existsSync(sourceRoot)) {
     return [];
   }
 
   const files = walk(sourceRoot)
-    .filter((filePath) => filePath.endsWith('.ts') || filePath.endsWith('.tsx'))
+    .filter((filePath) => filePath.endsWith(".ts") || filePath.endsWith(".tsx"))
     .filter((filePath) => isIncluded(cwd, filePath, config))
     .filter((filePath) => {
       if (!domain) {
         return true;
       }
       const relative = relativePosix(cwd, filePath);
-      return relative.includes(`/${domain}/`) || relative.endsWith(`/${domain}.ts`);
+      return (
+        relative.includes(`/${domain}/`) || relative.endsWith(`/${domain}.ts`)
+      );
     })
     .sort();
 
@@ -31,7 +37,11 @@ function walk(directory: string): string[] {
   for (const entry of entries) {
     const fullPath = path.join(directory, entry.name);
     if (entry.isDirectory()) {
-      if (entry.name === 'node_modules' || entry.name === 'dist' || entry.name === '.git') {
+      if (
+        entry.name === "node_modules" ||
+        entry.name === "dist" ||
+        entry.name === ".git"
+      ) {
         continue;
       }
       files.push(...walk(fullPath));
@@ -43,10 +53,18 @@ function walk(directory: string): string[] {
   return files;
 }
 
-function isIncluded(cwd: string, filePath: string, config: CodeHealthConfig): boolean {
+function isIncluded(
+  cwd: string,
+  filePath: string,
+  config: CodeHealthConfig,
+): boolean {
   const relative = relativePosix(cwd, filePath);
-  const included = config.scan.include.some((pattern) => matchesPattern(relative, pattern));
-  const excluded = config.scan.exclude.some((pattern) => matchesPattern(relative, pattern));
+  const included = config.scan.include.some((pattern) =>
+    matchesPattern(relative, pattern),
+  );
+  const excluded = config.scan.exclude.some((pattern) =>
+    matchesPattern(relative, pattern),
+  );
   return included && !excluded;
 }
 
@@ -54,23 +72,26 @@ export function matchesPattern(filePath: string, pattern: string): boolean {
   const normalizedFile = toPosixPath(filePath);
   const normalizedPattern = toPosixPath(pattern);
 
-  if (normalizedPattern.includes('/**/')) {
-    const directPattern = normalizedPattern.replace('/**/', '/');
+  if (normalizedPattern.includes("/**/")) {
+    const directPattern = normalizedPattern.replace("/**/", "/");
     if (matchesPattern(normalizedFile, directPattern)) {
       return true;
     }
   }
 
-  if (normalizedPattern.startsWith('*/')) {
+  if (normalizedPattern.startsWith("*/")) {
     return globToRegExp(`**/${normalizedPattern}`).test(normalizedFile);
   }
 
-  if (normalizedPattern.startsWith('**/')) {
+  if (normalizedPattern.startsWith("**/")) {
     const suffixPattern = normalizedPattern.slice(3);
-    return matchesPattern(normalizedFile, suffixPattern) || globToRegExp(normalizedPattern).test(normalizedFile);
+    return (
+      matchesPattern(normalizedFile, suffixPattern) ||
+      globToRegExp(normalizedPattern).test(normalizedFile)
+    );
   }
 
-  if (normalizedPattern.endsWith('/**')) {
+  if (normalizedPattern.endsWith("/**")) {
     return normalizedFile.startsWith(normalizedPattern.slice(0, -3));
   }
 
@@ -79,30 +100,30 @@ export function matchesPattern(filePath: string, pattern: string): boolean {
 }
 
 function globToRegExp(pattern: string): RegExp {
-  let source = '^';
+  let source = "^";
   for (let index = 0; index < pattern.length; index += 1) {
     const char = pattern[index];
     const next = pattern[index + 1];
 
-    if (char === '*' && next === '*') {
-      source += '.*';
+    if (char === "*" && next === "*") {
+      source += ".*";
       index += 1;
       continue;
     }
-    if (char === '*') {
-      source += '[^/]*';
+    if (char === "*") {
+      source += "[^/]*";
       continue;
     }
-    if (char === '?') {
-      source += '.';
+    if (char === "?") {
+      source += ".";
       continue;
     }
     source += escapeRegExp(char);
   }
-  source += '$';
+  source += "$";
   return new RegExp(source);
 }
 
 function escapeRegExp(value: string): string {
-  return value.replace(/[|\\{}()[\]^$+?.]/g, '\\$&');
+  return value.replace(/[|\\{}()[\]^$+?.]/g, "\\$&");
 }

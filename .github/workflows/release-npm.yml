@@ -1,0 +1,149 @@
+name: Release to npm
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact package version to publish, for example 0.1.1 or 0.2.0-beta.1
+        required: true
+        type: string
+      npm_tag:
+        description: npm dist-tag to publish under
+        required: true
+        default: latest
+        type: choice
+        options:
+          - latest
+          - next
+          - beta
+          - alpha
+      dry_run:
+        description: Run all checks and npm publish dry-run without committing, tagging, or publishing
+        required: true
+        default: true
+        type: boolean
+      create_github_release:
+        description: Create a GitHub Release after publishing
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    environment: npm-release
+
+    env:
+      VERSION: ${{ inputs.version }}
+      NPM_TAG: ${{ inputs.npm_tag }}
+      DRY_RUN: ${{ inputs.dry_run }}
+      CREATE_GITHUB_RELEASE: ${{ inputs.create_github_release }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate version input
+        run: |
+          node - <<'NODE'
+          const version = process.env.VERSION;
+          const semverPattern = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
+
+          if (!semverPattern.test(version)) {
+            console.error(`Invalid semver version: ${version}`);
+            process.exit(1);
+          }
+          NODE
+
+      - name: Check npm version availability
+        run: |
+          PACKAGE_NAME="$(node -p "require('./package.json').name")"
+
+          if npm view "${PACKAGE_NAME}@${VERSION}" version >/dev/null 2>&1; then
+            echo "Version ${PACKAGE_NAME}@${VERSION} already exists on npm."
+            exit 1
+          fi
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Set package version
+        run: |
+          CURRENT_VERSION="$(node -p "require('./package.json').version")"
+
+          if [ "${CURRENT_VERSION}" = "${VERSION}" ]; then
+            echo "package.json is already at ${VERSION}; skipping npm version."
+          else
+            npm version "${VERSION}" --no-git-tag-version
+          fi
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify npm package
+        run: npm pack --dry-run
+
+      - name: Dry-run npm publish
+        if: env.DRY_RUN == 'true'
+        run: npm publish --dry-run --access public --tag "${NPM_TAG}"
+
+      - name: Configure git
+        if: env.DRY_RUN != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit version and create tag
+        if: env.DRY_RUN != 'true'
+        run: |
+          git add package.json package-lock.json
+
+          if git diff --cached --quiet; then
+            echo "No package version files changed; skipping release commit."
+          else
+            git commit -m "chore(release): v${VERSION}"
+          fi
+
+          if git rev-parse "v${VERSION}" >/dev/null 2>&1; then
+            echo "Tag v${VERSION} already exists locally; skipping tag creation."
+          else
+            git tag "v${VERSION}"
+          fi
+
+      - name: Publish to npm
+        if: env.DRY_RUN != 'true'
+        run: npm publish --access public --tag "${NPM_TAG}"
+
+      - name: Push version commit and tag
+        if: env.DRY_RUN != 'true'
+        run: git push origin "HEAD:${GITHUB_REF_NAME}" "v${VERSION}"
+
+      - name: Create GitHub Release
+        if: env.DRY_RUN != 'true' && env.CREATE_GITHUB_RELEASE == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ inputs.version }}
+          name: v${{ inputs.version }}
+          generate_release_notes: true

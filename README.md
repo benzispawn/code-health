@@ -34,7 +34,11 @@ npm i -D @rbenzi/code-health
 code-health init
 code-health scan
 code-health scan --domain billing
+code-health scan --duplication
 code-health score
+code-health duplication
+code-health duplication --show-code
+code-health duplication --json
 code-health report
 code-health report --format markdown
 code-health validate-architecture --fail

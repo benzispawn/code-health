@@ -1,12 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
 
 @Injectable()
 export class BillingService {
   changePlan(userId: string): string {
     if (!userId) {
-      return 'missing-user';
+      return "missing-user";
     }
 
-    return 'changed';
+    return "changed";
   }
 }

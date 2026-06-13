@@ -1,18 +1,35 @@
-import {
+import type {
   ArchitectureAnalysis,
   FileAnalysis,
   HotspotAnalysis,
-} from '../../shared/types/project-health';
+} from "../../shared/types/project-health";
 
-export function calculateHotspots(files: FileAnalysis[], architecture: ArchitectureAnalysis): HotspotAnalysis[] {
+export function calculateHotspots(
+  files: FileAnalysis[],
+  architecture: ArchitectureAnalysis,
+): HotspotAnalysis[] {
   const maxChurn = Math.max(1, ...files.map((file) => file.metrics.churn ?? 0));
 
   return files
     .map((file) => {
-      const complexityScore = Math.min(100, Math.max(file.metrics.cyclomaticComplexity, file.metrics.cognitiveComplexity) * 5);
-      const churnScore = Math.round(((file.metrics.churn ?? 0) / maxChurn) * 100);
-      const architectureRisk = architecture.violations.some((violation) => violation.file === file.path) ? 100 : 20;
-      const refactorPriority = Math.round((complexityScore / 100) * (churnScore / 100) * 100);
+      const complexityScore = Math.min(
+        100,
+        Math.max(
+          file.metrics.cyclomaticComplexity,
+          file.metrics.cognitiveComplexity,
+        ) * 5,
+      );
+      const churnScore = Math.round(
+        ((file.metrics.churn ?? 0) / maxChurn) * 100,
+      );
+      const architectureRisk = architecture.violations.some(
+        (violation) => violation.file === file.path,
+      )
+        ? 100
+        : 20;
+      const refactorPriority = Math.round(
+        (complexityScore / 100) * (churnScore / 100) * 100,
+      );
 
       return {
         file: file.path,
@@ -27,15 +44,15 @@ export function calculateHotspots(files: FileAnalysis[], architecture: Architect
     .sort((left, right) => right.refactorPriority - left.refactorPriority);
 }
 
-export function priorityLabel(score: number): HotspotAnalysis['priority'] {
+export function priorityLabel(score: number): HotspotAnalysis["priority"] {
   if (score >= 80) {
-    return 'Very High';
+    return "Very High";
   }
   if (score >= 60) {
-    return 'High';
+    return "High";
   }
   if (score >= 35) {
-    return 'Medium';
+    return "Medium";
   }
-  return 'Low';
+  return "Low";
 }

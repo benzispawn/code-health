@@ -1,10 +1,17 @@
-import { CircularDependency, DependencyGraph, FileAnalysis } from '../../shared/types/project-health';
+import type {
+  CircularDependency,
+  DependencyGraph,
+  FileAnalysis,
+} from "../../shared/types/project-health";
 
 export function buildDependencyGraph(files: FileAnalysis[]): DependencyGraph {
   const knownFiles = new Set(files.map((file) => file.path));
   const edges = files.flatMap((file) =>
     file.imports
-      .filter((imported) => imported.resolvedPath && knownFiles.has(imported.resolvedPath))
+      .filter(
+        (imported) =>
+          imported.resolvedPath && knownFiles.has(imported.resolvedPath),
+      )
       .map((imported) => ({
         from: file.path,
         to: imported.resolvedPath as string,
@@ -13,11 +20,15 @@ export function buildDependencyGraph(files: FileAnalysis[]): DependencyGraph {
 
   return {
     nodes: [...knownFiles].sort(),
-    edges: edges.sort((left, right) => `${left.from}:${left.to}`.localeCompare(`${right.from}:${right.to}`)),
+    edges: edges.sort((left, right) =>
+      `${left.from}:${left.to}`.localeCompare(`${right.from}:${right.to}`),
+    ),
   };
 }
 
-export function findCircularDependencies(graph: DependencyGraph): CircularDependency[] {
+export function findCircularDependencies(
+  graph: DependencyGraph,
+): CircularDependency[] {
   const adjacency = new Map<string, string[]>();
   for (const node of graph.nodes) {
     adjacency.set(node, []);
@@ -35,7 +46,9 @@ export function findCircularDependencies(graph: DependencyGraph): CircularDepend
   return [...cycles.values()].map((files) => ({ files }));
 }
 
-export function buildPackageDependencyGraph(graph: DependencyGraph): DependencyGraph {
+export function buildPackageDependencyGraph(
+  graph: DependencyGraph,
+): DependencyGraph {
   const nodes = new Set<string>();
   const edgeKeys = new Set<string>();
 
@@ -52,21 +65,23 @@ export function buildPackageDependencyGraph(graph: DependencyGraph): DependencyG
   return {
     nodes: [...nodes].sort(),
     edges: [...edgeKeys].sort().map((key) => {
-      const [from, to] = key.split('->');
+      const [from, to] = key.split("->");
       return { from, to };
     }),
   };
 }
 
 function packagePath(filePath: string): string {
-  const parts = filePath.split('/');
+  const parts = filePath.split("/");
   if (parts.length <= 2) {
-    return parts.slice(0, -1).join('/') || '.';
+    return parts.slice(0, -1).join("/") || ".";
   }
-  return parts.slice(0, -1).join('/');
+  return parts.slice(0, -1).join("/");
 }
 
-export function calculateDependencyDepths(graph: DependencyGraph): Map<string, number> {
+export function calculateDependencyDepths(
+  graph: DependencyGraph,
+): Map<string, number> {
   const adjacency = new Map<string, string[]>();
   const memo = new Map<string, number>();
 
@@ -101,7 +116,9 @@ function dependencyDepth(
   visiting.add(node);
   const depth = Math.max(
     0,
-    ...(adjacency.get(node) ?? []).map((next) => 1 + dependencyDepth(next, adjacency, visiting, memo)),
+    ...(adjacency.get(node) ?? []).map(
+      (next) => 1 + dependencyDepth(next, adjacency, visiting, memo),
+    ),
   );
   visiting.delete(node);
   memo.set(node, depth);
@@ -123,7 +140,7 @@ function visit(
   for (const next of adjacency.get(current) ?? []) {
     if (next === start && nextStack.length > 1) {
       const cycle = normalizeCycle(nextStack);
-      cycles.set(cycle.join('>'), cycle);
+      cycles.set(cycle.join(">"), cycle);
       continue;
     }
     visit(start, next, adjacency, nextStack, cycles);
@@ -131,6 +148,9 @@ function visit(
 }
 
 function normalizeCycle(cycle: string[]): string[] {
-  const minIndex = cycle.reduce((best, value, index) => (value < cycle[best] ? index : best), 0);
+  const minIndex = cycle.reduce(
+    (best, value, index) => (value < cycle[best] ? index : best),
+    0,
+  );
   return [...cycle.slice(minIndex), ...cycle.slice(0, minIndex)];
 }

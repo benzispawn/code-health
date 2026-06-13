@@ -3,7 +3,10 @@ export function calculateMaintainabilityIndex(input: {
   cyclomaticComplexity: number;
   functionCount: number;
 }): number {
-  const volumeProxy = Math.max(1, input.loc * Math.log2(Math.max(2, input.functionCount + 1)));
+  const volumeProxy = Math.max(
+    1,
+    input.loc * Math.log2(Math.max(2, input.functionCount + 1)),
+  );
   const raw =
     171 -
     5.2 * Math.log(volumeProxy) -

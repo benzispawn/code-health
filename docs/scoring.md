@@ -123,8 +123,25 @@ Each file also receives a score. File scores consider:
 - parameter count
 - fan-out
 - maintainability index
+- duplication percent
 
 Use file scores to find concrete places to inspect after reading the project summary.
+
+## Risk Signal Ratings
+
+Risk signals use metric-specific ratings. Higher is better for scores and coverage; lower is better for duplication, dependency depth, API surface, and package cycles.
+
+Examples:
+
+| Metric | Excellent | Medium | Extreme Bad |
+| --- | ---: | ---: | ---: |
+| Duplication | 0-2% | 6-10% | 21%+ |
+| Dependency Depth | 0-2 | 5-8 | 13+ |
+| API Surface Size | 0-25 | 76-150 | 301+ |
+| Package Cycles | 0 | n/a | 2+ |
+| Coverage | 90-100% | 60-79% | 0-39% |
+
+These ratings are meant to guide review priority. A large API surface is not always wrong, but it means more public behavior can depend on the module.
 
 ## Hotspot Priority
 

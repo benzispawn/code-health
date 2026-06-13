@@ -1,7 +1,7 @@
-import { Controller } from '@nestjs/common';
-import { PlanRepository } from './repositories';
+import { Controller } from "@nestjs/common";
+import type { PlanRepository } from "./repositories";
 
-@Controller('billing')
+@Controller("billing")
 export class BillingController {
   constructor(private readonly planRepository: PlanRepository) {}
 }

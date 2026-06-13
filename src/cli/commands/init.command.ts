@@ -1,12 +1,15 @@
-import fs from 'node:fs';
-import path from 'node:path';
+import fs from "node:fs";
+import path from "node:path";
 
 export function initCommand(flags: Record<string, string | boolean>): void {
-  const fileName = typeof flags.config === 'string' ? flags.config : 'code-health.config.ts';
+  const fileName =
+    typeof flags.config === "string" ? flags.config : "code-health.config.ts";
   const target = path.resolve(process.cwd(), fileName);
 
   if (fs.existsSync(target) && flags.force !== true) {
-    console.log(`skipped ${path.relative(process.cwd(), target)} (use --force to overwrite)`);
+    console.log(
+      `skipped ${path.relative(process.cwd(), target)} (use --force to overwrite)`,
+    );
     return;
   }
 

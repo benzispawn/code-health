@@ -1,4 +1,4 @@
-import { BillingService } from './billing.service';
+import type { BillingService } from "./billing.service";
 
 // Public API entry point for billing workflows.
 export class BillingController {
@@ -6,7 +6,7 @@ export class BillingController {
 
   changePlan(userId: string): string {
     if (!userId) {
-      return 'missing-user';
+      return "missing-user";
     }
 
     return this.billingService.changePlan(userId);

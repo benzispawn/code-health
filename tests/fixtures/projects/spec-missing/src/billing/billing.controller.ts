@@ -1,9 +1,9 @@
-import { Controller, Post } from '@nestjs/common';
+import { Controller, Post } from "@nestjs/common";
 
-@Controller('billing')
+@Controller("billing")
 export class BillingController {
-  @Post('change-plan')
+  @Post("change-plan")
   changePlan(): string {
-    return 'changed';
+    return "changed";
   }
 }

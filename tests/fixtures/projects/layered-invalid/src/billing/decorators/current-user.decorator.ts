@@ -1,3 +1,3 @@
 export const CurrentUser = () => {
-  return 'user-id';
+  return "user-id";
 };
