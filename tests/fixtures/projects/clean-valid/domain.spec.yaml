@@ -1,0 +1,18 @@
+project:
+  name: email-saas
+  framework: nestjs
+domains:
+  - name: billing
+    path: src/billing
+    controllers:
+      - name: BillingController
+        routes:
+          - method: POST
+            path: /change-plan
+            handler: changePlan
+    services:
+      - name: BillingService
+        methods:
+          - name: changePlan
+    decorators:
+      - name: CurrentUser

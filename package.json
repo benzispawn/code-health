@@ -1,0 +1,36 @@
+{
+  "name": "@rbenzi/code-health",
+  "version": "0.1.0",
+  "description": "Spec-driven architecture health CLI for NestJS and TypeScript projects",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/benzispawn/code-health.git"
+  },
+  "license": "MIT",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "bin": {
+    "code-health": "dist/bin/code-health.js"
+  },
+  "files": [
+    "dist",
+    "docs",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "pretest": "npm run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:unit": "vitest run tests/unit",
+    "pretest:integration": "npm run build",
+    "test:integration": "vitest run tests/integration",
+    "prepare": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.2",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.9"
+  }
+}
