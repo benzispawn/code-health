@@ -2,7 +2,7 @@ import type {
   ArchitectureAnalysis,
   FileAnalysis,
   HotspotAnalysis,
-} from "../../shared/types/project-health";
+} from '../../shared/types/project-health';
 
 export function calculateHotspots(
   files: FileAnalysis[],
@@ -44,15 +44,15 @@ export function calculateHotspots(
     .sort((left, right) => right.refactorPriority - left.refactorPriority);
 }
 
-export function priorityLabel(score: number): HotspotAnalysis["priority"] {
+export function priorityLabel(score: number): HotspotAnalysis['priority'] {
   if (score >= 80) {
-    return "Very High";
+    return 'Very High';
   }
   if (score >= 60) {
-    return "High";
+    return 'High';
   }
   if (score >= 35) {
-    return "Medium";
+    return 'Medium';
   }
-  return "Low";
+  return 'Low';
 }

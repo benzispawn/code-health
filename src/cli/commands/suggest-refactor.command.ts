@@ -1,4 +1,4 @@
-import { scanFromFlags } from "./command-utils";
+import { scanFromFlags } from './command-utils';
 
 export async function suggestRefactorCommand(
   flags: Record<string, string | boolean>,
@@ -6,7 +6,7 @@ export async function suggestRefactorCommand(
   const report = await scanFromFlags(flags);
 
   if (report.recommendations.length === 0) {
-    console.log("No refactor recommendations found");
+    console.log('No refactor recommendations found');
     return;
   }
 

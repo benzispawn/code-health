@@ -14,13 +14,13 @@ export function calculateCognitiveComplexity(source: string): number {
     if (/\belse\b/.test(trimmed)) {
       score += 1;
     }
-    if (trimmed.includes("&&") || trimmed.includes("||")) {
+    if (trimmed.includes('&&') || trimmed.includes('||')) {
       score += 1;
     }
-    if (trimmed.endsWith("{")) {
+    if (trimmed.endsWith('{')) {
       nesting += 1;
     }
-    if (trimmed.startsWith("}")) {
+    if (trimmed.startsWith('}')) {
       nesting = Math.max(0, nesting - 1);
     }
   }

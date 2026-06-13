@@ -1,7 +1,7 @@
-import path from "node:path";
+import path from 'node:path';
 
 export function toPosixPath(filePath: string): string {
-  return filePath.split(path.sep).join("/");
+  return filePath.split(path.sep).join('/');
 }
 
 export function relativePosix(from: string, to: string): string {
@@ -9,5 +9,5 @@ export function relativePosix(from: string, to: string): string {
 }
 
 export function stripExtension(filePath: string): string {
-  return filePath.replace(/\.[cm]?[tj]sx?$/, "");
+  return filePath.replace(/\.[cm]?[tj]sx?$/, '');
 }

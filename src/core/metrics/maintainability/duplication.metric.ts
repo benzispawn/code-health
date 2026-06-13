@@ -20,7 +20,7 @@ export interface DuplicationGroup {
   normalizedText: string;
   occurrences: DuplicationOccurrence[];
   lineCount: number;
-  severity: "Low" | "Medium" | "High";
+  severity: 'Low' | 'Medium' | 'High';
 }
 
 export interface DuplicationOccurrence {
@@ -101,7 +101,7 @@ function calculateDuplicationGroups(
       index += 1
     ) {
       const block = lines.slice(index, index + DEFAULT_MIN_BLOCK_LINES);
-      const normalizedText = block.map((line) => line.value).join("\n");
+      const normalizedText = block.map((line) => line.value).join('\n');
       const occurrences = windows.get(normalizedText) ?? [];
       occurrences.push({
         file: path,
@@ -186,13 +186,13 @@ function canMergeGroups(
 function occurrenceShape(group: DuplicationGroup): string {
   const fileShape = group.occurrences
     .map((occurrence) => occurrence.file)
-    .join("|");
+    .join('|');
   const firstLine = group.occurrences[0]?.lineStart ?? 0;
-  return `${fileShape}:${String(firstLine).padStart(8, "0")}`;
+  return `${fileShape}:${String(firstLine).padStart(8, '0')}`;
 }
 
 function lastLine(value: string): string {
-  const lines = value.split("\n");
+  const lines = value.split('\n');
   return lines[lines.length - 1];
 }
 
@@ -207,7 +207,7 @@ function meaningfulLines(source: string): MeaningfulLine[] {
 }
 
 function normalizeLine(line: string): string {
-  return line.trim().replace(/\s+/g, " ");
+  return line.trim().replace(/\s+/g, ' ');
 }
 
 function isMeaningfulLine(line: string): boolean {
@@ -215,12 +215,12 @@ function isMeaningfulLine(line: string): boolean {
     return false;
   }
   if (
-    line.startsWith("import ") ||
-    line.startsWith("//") ||
-    line.startsWith("/*") ||
-    line.startsWith("*") ||
-    line === "{" ||
-    line === "}"
+    line.startsWith('import ') ||
+    line.startsWith('//') ||
+    line.startsWith('/*') ||
+    line.startsWith('*') ||
+    line === '{' ||
+    line === '}'
   ) {
     return false;
   }
@@ -247,15 +247,15 @@ function mergeOccurrences(
 function severityFor(
   lineCount: number,
   occurrenceCount: number,
-): DuplicationGroup["severity"] {
+): DuplicationGroup['severity'] {
   const score = lineCount * occurrenceCount;
   if (score >= 12) {
-    return "High";
+    return 'High';
   }
   if (score >= 6) {
-    return "Medium";
+    return 'Medium';
   }
-  return "Low";
+  return 'Low';
 }
 
 function fingerprint(value: string): string {
@@ -263,5 +263,5 @@ function fingerprint(value: string): string {
   for (let index = 0; index < value.length; index += 1) {
     hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
   }
-  return hash.toString(16).padStart(8, "0");
+  return hash.toString(16).padStart(8, '0');
 }

@@ -1,13 +1,13 @@
-import path from "node:path";
-import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../../src/config/default-config";
-import { scanProject } from "../../src/core/scanner/project-scanner";
+import path from 'node:path';
+import { describe, expect, it } from 'vitest';
+import { DEFAULT_CONFIG } from '../../src/config/default-config';
+import { scanProject } from '../../src/core/scanner/project-scanner';
 
-describe("MVP metrics integration", () => {
-  it("reports duplication, comments, logical LOC, coverage, and dependency depth", () => {
+describe('MVP metrics integration', () => {
+  it('reports duplication, comments, logical LOC, coverage, and dependency depth', () => {
     const cwd = path.resolve(
       process.cwd(),
-      "tests/fixtures/projects/mvp-metrics",
+      'tests/fixtures/projects/mvp-metrics',
     );
     const report = scanProject({
       cwd,
@@ -15,13 +15,13 @@ describe("MVP metrics integration", () => {
       includeGit: false,
     });
     const controller = report.files.find(
-      (file) => file.path === "src/billing/billing.controller.ts",
+      (file) => file.path === 'src/billing/billing.controller.ts',
     );
     const service = report.files.find(
-      (file) => file.path === "src/billing/billing.service.ts",
+      (file) => file.path === 'src/billing/billing.service.ts',
     );
     const helper = report.files.find(
-      (file) => file.path === "src/billing/billing.helper.ts",
+      (file) => file.path === 'src/billing/billing.helper.ts',
     );
 
     expect(controller?.metrics.commentLines).toBe(1);
@@ -48,8 +48,8 @@ describe("MVP metrics integration", () => {
       expect.arrayContaining([
         expect.objectContaining({
           occurrences: expect.arrayContaining([
-            expect.objectContaining({ file: "src/billing/billing.helper.ts" }),
-            expect.objectContaining({ file: "src/billing/billing.service.ts" }),
+            expect.objectContaining({ file: 'src/billing/billing.helper.ts' }),
+            expect.objectContaining({ file: 'src/billing/billing.service.ts' }),
           ]),
         }),
       ]),

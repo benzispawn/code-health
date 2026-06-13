@@ -1,6 +1,6 @@
-import fs from "node:fs";
-import path from "node:path";
-import { relativePosix } from "../../../shared/fs/path-utils";
+import fs from 'node:fs';
+import path from 'node:path';
+import { relativePosix } from '../../../shared/fs/path-utils';
 
 export interface CoverageEntry {
   lineCoverage?: number;
@@ -9,7 +9,7 @@ export interface CoverageEntry {
 
 export function readLcovCoverage(
   cwd: string,
-  lcovPath = "coverage/lcov.info",
+  lcovPath = 'coverage/lcov.info',
 ): Map<string, CoverageEntry> {
   const resolved = path.resolve(cwd, lcovPath);
   if (!fs.existsSync(resolved)) {
@@ -17,23 +17,23 @@ export function readLcovCoverage(
   }
 
   const coverage = new Map<string, CoverageEntry>();
-  const records = fs.readFileSync(resolved, "utf8").split("end_of_record");
+  const records = fs.readFileSync(resolved, 'utf8').split('end_of_record');
 
   for (const record of records) {
     const lines = record
       .split(/\r?\n/)
       .map((line) => line.trim())
       .filter(Boolean);
-    const sourceFileLine = lines.find((line) => line.startsWith("SF:"));
+    const sourceFileLine = lines.find((line) => line.startsWith('SF:'));
     if (!sourceFileLine) {
       continue;
     }
 
     const sourceFile = normalizeCoveragePath(cwd, sourceFileLine.slice(3));
-    const foundLines = numberValue(lines, "LF:");
-    const hitLines = numberValue(lines, "LH:");
-    const foundBranches = numberValue(lines, "BRF:");
-    const hitBranches = numberValue(lines, "BRH:");
+    const foundLines = numberValue(lines, 'LF:');
+    const hitLines = numberValue(lines, 'LH:');
+    const foundBranches = numberValue(lines, 'BRF:');
+    const hitBranches = numberValue(lines, 'BRH:');
 
     coverage.set(sourceFile, {
       lineCoverage:

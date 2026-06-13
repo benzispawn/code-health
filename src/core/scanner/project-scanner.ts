@@ -1,25 +1,25 @@
-import fs from "node:fs";
-import type { CodeHealthConfig } from "../../shared/types/config";
+import fs from 'node:fs';
+import type { CodeHealthConfig } from '../../shared/types/config';
 import type {
   DomainAnalysis,
   ProjectHealthReport,
-} from "../../shared/types/project-health";
-import { relativePosix } from "../../shared/fs/path-utils";
-import { validateArchitecture } from "../architecture/architecture-validator";
-import { calculateDependencyDepths } from "../architecture/dependency-graph";
-import { readGitChurn } from "../git/churn-reader";
-import { calculateHotspots } from "../git/hotspot-calculator";
-import { applyFanIn } from "../metrics/coupling/fan-in.metric";
-import { readLcovCoverage } from "../metrics/coverage/lcov-reader";
-import { calculateDuplicationMetrics } from "../metrics/maintainability/duplication.metric";
+} from '../../shared/types/project-health';
+import { relativePosix } from '../../shared/fs/path-utils';
+import { validateArchitecture } from '../architecture/architecture-validator';
+import { calculateDependencyDepths } from '../architecture/dependency-graph';
+import { readGitChurn } from '../git/churn-reader';
+import { calculateHotspots } from '../git/hotspot-calculator';
+import { applyFanIn } from '../metrics/coupling/fan-in.metric';
+import { readLcovCoverage } from '../metrics/coverage/lcov-reader';
+import { calculateDuplicationMetrics } from '../metrics/maintainability/duplication.metric';
 import {
   applyFileScores,
   calculateHealthSummary,
-} from "../scoring/health-score-calculator";
-import { createRefactorRecommendations } from "../scoring/refactor-priority-calculator";
-import { findSourceFiles } from "./file-scanner";
-import { scanFileWithTsMorph } from "./ts-morph-file-scanner";
-import { createTsMorphProject } from "./ts-morph-project";
+} from '../scoring/health-score-calculator';
+import { createRefactorRecommendations } from '../scoring/refactor-priority-calculator';
+import { findSourceFiles } from './file-scanner';
+import { scanFileWithTsMorph } from './ts-morph-file-scanner';
+import { createTsMorphProject } from './ts-morph-project';
 
 export interface ScanProjectOptions {
   cwd: string;
@@ -60,7 +60,7 @@ export function scanProject(options: ScanProjectOptions): ProjectHealthReport {
       path: file.path,
       source: fs.readFileSync(
         sourceFilesByRelativePath.get(file.path) as string,
-        "utf8",
+        'utf8',
       ),
     })),
   );
@@ -130,8 +130,8 @@ export function scanProject(options: ScanProjectOptions): ProjectHealthReport {
 }
 
 function calculateDomains(
-  files: ProjectHealthReport["files"],
-  violations: ProjectHealthReport["architecture"]["violations"],
+  files: ProjectHealthReport['files'],
+  violations: ProjectHealthReport['architecture']['violations'],
 ): DomainAnalysis[] {
   const domainNames = [
     ...new Set(

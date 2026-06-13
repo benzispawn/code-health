@@ -1,17 +1,17 @@
-import fs from "node:fs";
-import path from "node:path";
-import { pathToFileURL } from "node:url";
-import { DEFAULT_CONFIG } from "./default-config";
-import { validateConfig } from "./schema";
-import { CodeHealthError } from "../shared/errors/code-health-error";
-import type { CodeHealthConfig } from "../shared/types/config";
+import fs from 'node:fs';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { DEFAULT_CONFIG } from './default-config';
+import { validateConfig } from './schema';
+import { CodeHealthError } from '../shared/errors/code-health-error';
+import type { CodeHealthConfig } from '../shared/types/config';
 
 const CONFIG_FILES = [
-  "code-health.config.ts",
-  "code-health.config.mjs",
-  "code-health.config.js",
-  "code-health.config.cjs",
-  "code-health.config.json",
+  'code-health.config.ts',
+  'code-health.config.mjs',
+  'code-health.config.js',
+  'code-health.config.cjs',
+  'code-health.config.json',
 ];
 
 export interface LoadConfigOptions {
@@ -29,7 +29,7 @@ export async function loadConfig(
 
   if (!validation.valid) {
     throw new CodeHealthError(
-      `Invalid code health config:\n${validation.errors.join("\n")}`,
+      `Invalid code health config:\n${validation.errors.join('\n')}`,
     );
   }
 
@@ -61,13 +61,13 @@ export function findConfigFile(
 async function readConfigFile(
   filePath: string,
 ): Promise<Partial<CodeHealthConfig>> {
-  if (filePath.endsWith(".json")) {
+  if (filePath.endsWith('.json')) {
     return JSON.parse(
-      fs.readFileSync(filePath, "utf8"),
+      fs.readFileSync(filePath, 'utf8'),
     ) as Partial<CodeHealthConfig>;
   }
 
-  if (filePath.endsWith(".ts")) {
+  if (filePath.endsWith('.ts')) {
     return readTypeScriptConfig(filePath);
   }
 
@@ -78,8 +78,8 @@ async function readConfigFile(
 }
 
 function readTypeScriptConfig(filePath: string): Partial<CodeHealthConfig> {
-  const source = fs.readFileSync(filePath, "utf8");
-  const callStart = source.indexOf("defineConfig(");
+  const source = fs.readFileSync(filePath, 'utf8');
+  const callStart = source.indexOf('defineConfig(');
 
   if (callStart === -1) {
     throw new CodeHealthError(
@@ -87,10 +87,10 @@ function readTypeScriptConfig(filePath: string): Partial<CodeHealthConfig> {
     );
   }
 
-  const objectStart = source.indexOf("(", callStart) + 1;
+  const objectStart = source.indexOf('(', callStart) + 1;
   const objectText = extractBalancedExpression(source, objectStart);
   const readConfig = new Function(
-    "defineConfig",
+    'defineConfig',
     `return defineConfig(${objectText});`,
   ) as (
     defineConfig: (
@@ -103,7 +103,7 @@ function readTypeScriptConfig(filePath: string): Partial<CodeHealthConfig> {
 
 function extractBalancedExpression(source: string, start: number): string {
   let depth = 0;
-  let inString: '"' | "'" | "`" | undefined;
+  let inString: '"' | "'" | '`' | undefined;
   let escaped = false;
 
   for (let index = start; index < source.length; index += 1) {
@@ -114,7 +114,7 @@ function extractBalancedExpression(source: string, start: number): string {
         escaped = false;
         continue;
       }
-      if (char === "\\") {
+      if (char === '\\') {
         escaped = true;
         continue;
       }
@@ -124,15 +124,15 @@ function extractBalancedExpression(source: string, start: number): string {
       continue;
     }
 
-    if (char === '"' || char === "'" || char === "`") {
+    if (char === '"' || char === "'" || char === '`') {
       inString = char;
       continue;
     }
-    if (char === "(" || char === "{" || char === "[") {
+    if (char === '(' || char === '{' || char === '[') {
       depth += 1;
       continue;
     }
-    if (char === ")" || char === "}" || char === "]") {
+    if (char === ')' || char === '}' || char === ']') {
       if (depth === 0) {
         return source.slice(start, index);
       }
@@ -140,7 +140,7 @@ function extractBalancedExpression(source: string, start: number): string {
     }
   }
 
-  throw new CodeHealthError("Unable to parse TypeScript config");
+  throw new CodeHealthError('Unable to parse TypeScript config');
 }
 
 function mergeConfig(

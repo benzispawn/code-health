@@ -1,5 +1,5 @@
-import type { ProjectHealthReport } from "../../shared/types/project-health";
-import { extractSpecExpectations } from "./spec-validator";
+import type { ProjectHealthReport } from '../../shared/types/project-health';
+import { extractSpecExpectations } from './spec-validator';
 
 export interface SpecComparisonResult {
   checked: number;
@@ -24,7 +24,7 @@ export function compareSpecToReport(
 
   for (const expectation of expectations) {
     const exists =
-      expectation.kind === "method"
+      expectation.kind === 'method'
         ? methodNames.has(expectation.name)
         : classNames.has(expectation.name) || methodNames.has(expectation.name);
     if (!exists) {

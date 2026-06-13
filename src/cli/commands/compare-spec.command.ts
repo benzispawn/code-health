@@ -1,13 +1,13 @@
-import { loadSpecText } from "../../core/spec/spec-loader";
-import { compareSpecToReport } from "../../core/spec/spec-comparator";
-import { scanFromFlags } from "./command-utils";
+import { loadSpecText } from '../../core/spec/spec-loader';
+import { compareSpecToReport } from '../../core/spec/spec-comparator';
+import { scanFromFlags } from './command-utils';
 
 export async function compareSpecCommand(
   flags: Record<string, string | boolean>,
 ): Promise<void> {
   const report = await scanFromFlags(flags);
   const specFile =
-    typeof flags.spec === "string" ? flags.spec : report.config.spec.file;
+    typeof flags.spec === 'string' ? flags.spec : report.config.spec.file;
   const specText = loadSpecText(report.project.root, specFile);
 
   if (!specText) {
@@ -22,11 +22,11 @@ export async function compareSpecCommand(
   console.log(`Spec checks: ${comparison.checked}`);
 
   if (comparison.missing.length === 0) {
-    console.log("Spec compliance: OK");
+    console.log('Spec compliance: OK');
     return;
   }
 
-  console.log("Missing implementation:");
+  console.log('Missing implementation:');
   for (const missing of comparison.missing) {
     console.log(`- ${missing}`);
   }

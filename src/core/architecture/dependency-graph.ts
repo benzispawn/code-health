@@ -2,7 +2,7 @@ import type {
   CircularDependency,
   DependencyGraph,
   FileAnalysis,
-} from "../../shared/types/project-health";
+} from '../../shared/types/project-health';
 
 export function buildDependencyGraph(files: FileAnalysis[]): DependencyGraph {
   const knownFiles = new Set(files.map((file) => file.path));
@@ -65,18 +65,18 @@ export function buildPackageDependencyGraph(
   return {
     nodes: [...nodes].sort(),
     edges: [...edgeKeys].sort().map((key) => {
-      const [from, to] = key.split("->");
+      const [from, to] = key.split('->');
       return { from, to };
     }),
   };
 }
 
 function packagePath(filePath: string): string {
-  const parts = filePath.split("/");
+  const parts = filePath.split('/');
   if (parts.length <= 2) {
-    return parts.slice(0, -1).join("/") || ".";
+    return parts.slice(0, -1).join('/') || '.';
   }
-  return parts.slice(0, -1).join("/");
+  return parts.slice(0, -1).join('/');
 }
 
 export function calculateDependencyDepths(
@@ -140,7 +140,7 @@ function visit(
   for (const next of adjacency.get(current) ?? []) {
     if (next === start && nextStack.length > 1) {
       const cycle = normalizeCycle(nextStack);
-      cycles.set(cycle.join(">"), cycle);
+      cycles.set(cycle.join('>'), cycle);
       continue;
     }
     visit(start, next, adjacency, nextStack, cycles);

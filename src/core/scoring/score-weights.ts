@@ -1,4 +1,4 @@
-import type { ScoreWeights } from "../../shared/types/config";
+import type { ScoreWeights } from '../../shared/types/config';
 
 export const DEFAULT_SCORE_WEIGHTS: ScoreWeights = {
   complexityWeight: 0.25,

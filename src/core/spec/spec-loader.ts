@@ -1,5 +1,5 @@
-import fs from "node:fs";
-import path from "node:path";
+import fs from 'node:fs';
+import path from 'node:path';
 
 export function loadSpecText(
   cwd: string,
@@ -9,5 +9,5 @@ export function loadSpecText(
   if (!fs.existsSync(resolved)) {
     return undefined;
   }
-  return fs.readFileSync(resolved, "utf8");
+  return fs.readFileSync(resolved, 'utf8');
 }

@@ -1,25 +1,25 @@
 export interface SpecExpectation {
   name: string;
-  kind: "identifier" | "method";
+  kind: 'identifier' | 'method';
 }
 
 const IMPLEMENTATION_SECTIONS = new Set([
-  "controllers",
-  "services",
-  "repositories",
-  "providers",
-  "dtos",
-  "entities",
-  "guards",
-  "interceptors",
-  "decorators",
-  "pipes",
-  "filters",
-  "queues",
-  "events",
-  "cron",
-  "useCases",
-  "use-cases",
+  'controllers',
+  'services',
+  'repositories',
+  'providers',
+  'dtos',
+  'entities',
+  'guards',
+  'interceptors',
+  'decorators',
+  'pipes',
+  'filters',
+  'queues',
+  'events',
+  'cron',
+  'useCases',
+  'use-cases',
 ]);
 
 export function extractSpecExpectations(specText: string): SpecExpectation[] {
@@ -27,7 +27,7 @@ export function extractSpecExpectations(specText: string): SpecExpectation[] {
   const sectionStack: Array<{ indent: number; key: string }> = [];
 
   for (const rawLine of specText.split(/\r?\n/)) {
-    const line = rawLine.replace(/\s+#.*$/, "");
+    const line = rawLine.replace(/\s+#.*$/, '');
     if (!line.trim()) {
       continue;
     }
@@ -59,18 +59,18 @@ export function extractSpecExpectations(specText: string): SpecExpectation[] {
       .reverse()
       .find((section) => IMPLEMENTATION_SECTIONS.has(section.key));
 
-    if (key === "handler" && parentSection) {
-      expectations.push({ name: value, kind: "method" });
+    if (key === 'handler' && parentSection) {
+      expectations.push({ name: value, kind: 'method' });
       continue;
     }
 
-    if (key === "name" && nearestSection?.key === "methods" && parentSection) {
-      expectations.push({ name: value, kind: "method" });
+    if (key === 'name' && nearestSection?.key === 'methods' && parentSection) {
+      expectations.push({ name: value, kind: 'method' });
       continue;
     }
 
-    if (key === "name" && parentSection) {
-      expectations.push({ name: value, kind: "identifier" });
+    if (key === 'name' && parentSection) {
+      expectations.push({ name: value, kind: 'identifier' });
     }
   }
 

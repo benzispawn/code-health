@@ -1,4 +1,4 @@
-import type { FileAnalysis } from "../../../shared/types/project-health";
+import type { FileAnalysis } from '../../../shared/types/project-health';
 
 export function applyFanIn(files: FileAnalysis[]): FileAnalysis[] {
   const fanIn = new Map<string, number>();

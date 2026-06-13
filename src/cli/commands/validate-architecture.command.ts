@@ -1,4 +1,4 @@
-import { scanFromFlags } from "./command-utils";
+import { scanFromFlags } from './command-utils';
 
 export async function validateArchitectureCommand(
   flags: Record<string, string | boolean>,
@@ -6,7 +6,7 @@ export async function validateArchitectureCommand(
   const report = await scanFromFlags(flags);
 
   if (report.architecture.violations.length === 0) {
-    console.log("Architecture valid");
+    console.log('Architecture valid');
     return;
   }
 

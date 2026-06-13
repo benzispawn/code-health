@@ -1,13 +1,13 @@
-import fs from "node:fs";
-import path from "node:path";
-import type { SourceFile } from "ts-morph";
-import { Project } from "ts-morph";
+import fs from 'node:fs';
+import path from 'node:path';
+import type { SourceFile } from 'ts-morph';
+import { Project } from 'ts-morph';
 
 export function createTsMorphProject(
   cwd: string,
   sourceFiles: string[],
 ): Project {
-  const tsConfigFilePath = path.resolve(cwd, "tsconfig.json");
+  const tsConfigFilePath = path.resolve(cwd, 'tsconfig.json');
   const project = fs.existsSync(tsConfigFilePath)
     ? new Project({
         tsConfigFilePath,

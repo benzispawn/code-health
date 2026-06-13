@@ -1,9 +1,9 @@
-import type { CodeHealthConfig } from "../../shared/types/config";
+import type { CodeHealthConfig } from '../../shared/types/config';
 import type {
   ArchitectureAnalysis,
   FileAnalysis,
   HealthSummary,
-} from "../../shared/types/project-health";
+} from '../../shared/types/project-health';
 
 export function applyFileScores(
   files: FileAnalysis[],
@@ -76,7 +76,7 @@ export function calculateHealthSummary(
       0,
     ),
     criticalFindingCount: architecture.violations.filter(
-      (violation) => violation.severity === "error",
+      (violation) => violation.severity === 'error',
     ).length,
     duplicationPercent: Math.round(
       average(files.map((file) => file.metrics.duplicationPercent)),

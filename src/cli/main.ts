@@ -1,12 +1,12 @@
-import { compareSpecCommand } from "./commands/compare-spec.command";
-import { duplicationCommand } from "./commands/duplication.command";
-import { hotspotsCommand } from "./commands/hotspots.command";
-import { initCommand } from "./commands/init.command";
-import { reportCommand } from "./commands/report.command";
-import { scanCommand } from "./commands/scan.command";
-import { scoreCommand } from "./commands/score.command";
-import { suggestRefactorCommand } from "./commands/suggest-refactor.command";
-import { validateArchitectureCommand } from "./commands/validate-architecture.command";
+import { compareSpecCommand } from './commands/compare-spec.command';
+import { duplicationCommand } from './commands/duplication.command';
+import { hotspotsCommand } from './commands/hotspots.command';
+import { initCommand } from './commands/init.command';
+import { reportCommand } from './commands/report.command';
+import { scanCommand } from './commands/scan.command';
+import { scoreCommand } from './commands/score.command';
+import { suggestRefactorCommand } from './commands/suggest-refactor.command';
+import { validateArchitectureCommand } from './commands/validate-architecture.command';
 
 export interface ParsedArgs {
   command?: string;
@@ -15,44 +15,44 @@ export interface ParsedArgs {
 
 export async function runCli(argv: string[]): Promise<void> {
   const args = parseArgs(argv);
-  if (!args.command || args.flags.help === true || args.command === "help") {
+  if (!args.command || args.flags.help === true || args.command === 'help') {
     printHelp();
     return;
   }
 
-  if (args.command === "init") {
+  if (args.command === 'init') {
     initCommand(args.flags);
     return;
   }
-  if (args.command === "scan") {
+  if (args.command === 'scan') {
     await scanCommand(args.flags);
     return;
   }
-  if (args.command === "score") {
+  if (args.command === 'score') {
     await scoreCommand(args.flags);
     return;
   }
-  if (args.command === "duplication") {
+  if (args.command === 'duplication') {
     await duplicationCommand(args.flags);
     return;
   }
-  if (args.command === "report") {
+  if (args.command === 'report') {
     await reportCommand(args.flags);
     return;
   }
-  if (args.command === "validate-architecture") {
+  if (args.command === 'validate-architecture') {
     await validateArchitectureCommand(args.flags);
     return;
   }
-  if (args.command === "hotspots") {
+  if (args.command === 'hotspots') {
     await hotspotsCommand(args.flags);
     return;
   }
-  if (args.command === "compare-spec") {
+  if (args.command === 'compare-spec') {
     await compareSpecCommand(args.flags);
     return;
   }
-  if (args.command === "suggest-refactor") {
+  if (args.command === 'suggest-refactor') {
     await suggestRefactorCommand(args.flags);
     return;
   }
@@ -62,7 +62,7 @@ export async function runCli(argv: string[]): Promise<void> {
 
 export function parseArgs(argv: string[]): ParsedArgs {
   const [command, ...rest] = argv;
-  if (command?.startsWith("--")) {
+  if (command?.startsWith('--')) {
     return { flags: parseFlags(argv) };
   }
   return { command, flags: parseFlags(rest) };
@@ -72,16 +72,16 @@ function parseFlags(args: string[]): Record<string, string | boolean> {
   const flags: Record<string, string | boolean> = {};
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
-    if (!arg.startsWith("--")) {
+    if (!arg.startsWith('--')) {
       continue;
     }
-    const [rawKey, inlineValue] = arg.slice(2).split("=", 2);
+    const [rawKey, inlineValue] = arg.slice(2).split('=', 2);
     if (inlineValue !== undefined) {
       flags[rawKey] = inlineValue;
       continue;
     }
     const next = args[index + 1];
-    if (next && !next.startsWith("--")) {
+    if (next && !next.startsWith('--')) {
       flags[rawKey] = next;
       index += 1;
     } else {

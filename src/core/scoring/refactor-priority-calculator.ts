@@ -2,8 +2,8 @@ import type {
   ArchitectureAnalysis,
   FileAnalysis,
   RefactorRecommendation,
-} from "../../shared/types/project-health";
-import { priorityLabel } from "../git/hotspot-calculator";
+} from '../../shared/types/project-health';
+import { priorityLabel } from '../git/hotspot-calculator';
 
 export function createRefactorRecommendations(
   files: FileAnalysis[],
@@ -19,7 +19,7 @@ export function createRefactorRecommendations(
     if (worstFunction && worstFunction.cognitiveComplexity >= 15) {
       recommendations.push({
         file: file.path,
-        type: "extract-method",
+        type: 'extract-method',
         priority: priorityLabel(
           Math.min(100, worstFunction.cognitiveComplexity * 4),
         ),
@@ -27,11 +27,11 @@ export function createRefactorRecommendations(
       });
     }
 
-    if (file.layer === "service" && file.functions.length >= 10) {
+    if (file.layer === 'service' && file.functions.length >= 10) {
       recommendations.push({
         file: file.path,
-        type: "split-service",
-        priority: "High",
+        type: 'split-service',
+        priority: 'High',
         reason: `Service exposes ${file.functions.length} functions; consider splitting responsibilities`,
       });
     }
@@ -39,7 +39,7 @@ export function createRefactorRecommendations(
     if (file.metrics.fanOut >= 12) {
       recommendations.push({
         file: file.path,
-        type: "reduce-coupling",
+        type: 'reduce-coupling',
         priority: priorityLabel(Math.min(100, file.metrics.fanOut * 6)),
         reason: `Fan-out is ${file.metrics.fanOut}`,
       });
@@ -49,8 +49,8 @@ export function createRefactorRecommendations(
   for (const violation of architecture.violations) {
     recommendations.push({
       file: violation.file,
-      type: "fix-architecture",
-      priority: violation.severity === "error" ? "High" : "Medium",
+      type: 'fix-architecture',
+      priority: violation.severity === 'error' ? 'High' : 'Medium',
       reason: violation.message,
     });
   }
@@ -60,6 +60,6 @@ export function createRefactorRecommendations(
   );
 }
 
-function priorityRank(priority: RefactorRecommendation["priority"]): number {
-  return ["Low", "Medium", "High", "Very High"].indexOf(priority);
+function priorityRank(priority: RefactorRecommendation['priority']): number {
+  return ['Low', 'Medium', 'High', 'Very High'].indexOf(priority);
 }

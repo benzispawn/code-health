@@ -1,4 +1,4 @@
-import type { ProjectHealthReport } from "../../shared/types/project-health";
+import type { ProjectHealthReport } from '../../shared/types/project-health';
 import {
   formatRating,
   rateApiSurface,
@@ -10,20 +10,20 @@ import {
   ratePackageCycles,
   ratePublicExports,
   rateScore,
-} from "./rating";
+} from './rating';
 
 export function formatTerminalSummary(report: ProjectHealthReport): string[] {
   const lines = [
     `Project Health: ${report.summary.score}/100 ${formatRating(rateScore(report.summary.score))}`,
-    "",
-    "Critical Findings:",
+    '',
+    'Critical Findings:',
   ];
 
   const critical = report.architecture.violations.filter(
-    (violation) => violation.severity === "error",
+    (violation) => violation.severity === 'error',
   );
   if (critical.length === 0) {
-    lines.push("- None");
+    lines.push('- None');
   } else {
     lines.push(
       ...critical
@@ -32,9 +32,9 @@ export function formatTerminalSummary(report: ProjectHealthReport): string[] {
     );
   }
 
-  lines.push("", "Top Refactor Priorities:");
+  lines.push('', 'Top Refactor Priorities:');
   if (report.hotspots.length === 0) {
-    lines.push("- None");
+    lines.push('- None');
   } else {
     lines.push(
       ...report.hotspots
@@ -47,15 +47,15 @@ export function formatTerminalSummary(report: ProjectHealthReport): string[] {
   }
 
   lines.push(
-    "",
-    "Score Breakdown:",
+    '',
+    'Score Breakdown:',
     `- Architecture: ${report.summary.architectureScore}/100 ${formatRating(rateScore(report.summary.architectureScore))}`,
     `- Complexity: ${report.summary.complexityScore}/100 ${formatRating(rateScore(report.summary.complexityScore))}`,
     `- Maintainability: ${report.summary.maintainabilityScore}/100 ${formatRating(rateScore(report.summary.maintainabilityScore))}`,
     `- Coupling: ${report.summary.couplingScore}/100 ${formatRating(rateScore(report.summary.couplingScore))}`,
     `- Testability: ${report.summary.testabilityScore}/100 ${formatRating(rateScore(report.summary.testabilityScore))}`,
-    "",
-    "Risk Signals:",
+    '',
+    'Risk Signals:',
     `- Duplication: ${report.summary.duplicationPercent}% ${formatRating(rateDuplication(report.summary.duplicationPercent))}`,
     `- Max Dependency Depth: ${report.summary.maxDependencyDepth} ${formatRating(rateDependencyDepth(report.summary.maxDependencyDepth))}`,
     `- API Surface Size: ${report.summary.apiSurfaceSize} ${formatRating(rateApiSurface(report.summary.apiSurfaceSize))}`,
@@ -71,5 +71,5 @@ export function formatTerminalSummary(report: ProjectHealthReport): string[] {
 }
 
 function formatPercent(value: number | undefined): string {
-  return value === undefined ? "not found" : `${value}%`;
+  return value === undefined ? 'not found' : `${value}%`;
 }

@@ -1,4 +1,4 @@
-import { runCli } from "../../dist/src/cli/main";
+import { runCli } from '../../dist/src/cli/main';
 
 export async function runCliAndCapture(
   argv: string[],
@@ -10,10 +10,10 @@ export async function runCliAndCapture(
   const lines: string[] = [];
 
   console.log = (message?: unknown, ...optionalParams: unknown[]): void => {
-    lines.push([message, ...optionalParams].map(String).join(" "));
+    lines.push([message, ...optionalParams].map(String).join(' '));
   };
   console.error = (message?: unknown, ...optionalParams: unknown[]): void => {
-    lines.push([message, ...optionalParams].map(String).join(" "));
+    lines.push([message, ...optionalParams].map(String).join(' '));
   };
 
   try {
@@ -27,5 +27,5 @@ export async function runCliAndCapture(
     console.error = originalError;
   }
 
-  return `${lines.join("\n")}\n`;
+  return `${lines.join('\n')}\n`;
 }

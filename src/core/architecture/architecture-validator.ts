@@ -1,14 +1,14 @@
-import type { CodeHealthConfig } from "../../shared/types/config";
+import type { CodeHealthConfig } from '../../shared/types/config';
 import type {
   ArchitectureAnalysis,
   ArchitectureViolation,
   FileAnalysis,
-} from "../../shared/types/project-health";
+} from '../../shared/types/project-health';
 import {
   buildDependencyGraph,
   buildPackageDependencyGraph,
   findCircularDependencies,
-} from "./dependency-graph";
+} from './dependency-graph';
 
 export function validateArchitecture(
   files: FileAnalysis[],
@@ -45,23 +45,23 @@ export function validateArchitecture(
   for (const cycle of circularDependencies) {
     violations.push({
       file: cycle.files[0],
-      rule: "circular-dependency",
-      message: `Circular dependency detected: ${cycle.files.join(" -> ")}`,
-      severity: "error",
+      rule: 'circular-dependency',
+      message: `Circular dependency detected: ${cycle.files.join(' -> ')}`,
+      severity: 'error',
     });
   }
 
   for (const cycle of packageCycles) {
     violations.push({
       file: cycle.files[0],
-      rule: "package-cycle",
-      message: `Package cycle detected: ${cycle.files.join(" -> ")}`,
-      severity: "warning",
+      rule: 'package-cycle',
+      message: `Package cycle detected: ${cycle.files.join(' -> ')}`,
+      severity: 'warning',
     });
   }
 
   const penalty = violations.reduce(
-    (total, violation) => total + (violation.severity === "error" ? 12 : 5),
+    (total, violation) => total + (violation.severity === 'error' ? 12 : 5),
     0,
   );
 
@@ -94,7 +94,7 @@ function validateLayerRules(
       importedFile: target.path,
       rule: `${rule.from}-must-not-import-${target.layer}`,
       message: `${file.layer} file imports disallowed ${target.layer} file`,
-      severity: "error" as const,
+      severity: 'error' as const,
     }));
 }
 
@@ -106,13 +106,13 @@ function validateDomainBoundary(
     return undefined;
   }
 
-  if (target.path.includes("/internal/")) {
+  if (target.path.includes('/internal/')) {
     return {
       file: file.path,
       importedFile: target.path,
-      rule: "cross-domain-internal-import",
+      rule: 'cross-domain-internal-import',
       message: `${file.domain} imports ${target.domain} internal code`,
-      severity: "error",
+      severity: 'error',
     };
   }
 

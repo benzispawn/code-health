@@ -1,18 +1,18 @@
-import { describe, expect, it } from "vitest";
-import { matchesPattern } from "../../src/core/scanner/file-scanner";
+import { describe, expect, it } from 'vitest';
+import { matchesPattern } from '../../src/core/scanner/file-scanner';
 
-describe("matchesPattern", () => {
-  it("matches nested include and exclude globs", () => {
+describe('matchesPattern', () => {
+  it('matches nested include and exclude globs', () => {
     expect(
-      matchesPattern("src/billing/billing.controller.ts", "src/**/*.ts"),
+      matchesPattern('src/billing/billing.controller.ts', 'src/**/*.ts'),
     ).toBe(true);
     expect(
-      matchesPattern("src/billing/billing.controller.spec.ts", "**/*.spec.ts"),
+      matchesPattern('src/billing/billing.controller.spec.ts', '**/*.spec.ts'),
     ).toBe(true);
     expect(
       matchesPattern(
-        "src/billing/repositories/plan.repository.ts",
-        "*/repositories/*.ts",
+        'src/billing/repositories/plan.repository.ts',
+        '*/repositories/*.ts',
       ),
     ).toBe(true);
   });

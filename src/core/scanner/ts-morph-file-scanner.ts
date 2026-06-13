@@ -1,4 +1,4 @@
-import path from "node:path";
+import path from 'node:path';
 import type {
   ArrowFunction,
   CallExpression,
@@ -10,24 +10,24 @@ import type {
   Project,
   SourceFile,
   VariableDeclaration,
-} from "ts-morph";
-import { Node, SyntaxKind } from "ts-morph";
-import type { CodeHealthConfig } from "../../shared/types/config";
+} from 'ts-morph';
+import { Node, SyntaxKind } from 'ts-morph';
+import type { CodeHealthConfig } from '../../shared/types/config';
 import type {
   ClassAnalysis,
   FileAnalysis,
   FunctionAnalysis,
   ImportAnalysis,
-} from "../../shared/types/project-health";
-import { relativePosix } from "../../shared/fs/path-utils";
-import { detectDomain } from "../architecture/domain-boundary-rules";
-import { detectLayer } from "../architecture/layer-rules";
-import { calculateCyclomaticComplexity } from "../metrics/complexity/cyclomatic.metric";
-import { calculateCognitiveComplexity } from "../metrics/complexity/cognitive.metric";
-import { estimateNPathComplexity } from "../metrics/complexity/npath.metric";
-import { calculateMaintainabilityIndex } from "../metrics/maintainability/maintainability-index.metric";
-import { calculateFanOut } from "../metrics/coupling/fan-out.metric";
-import { getRequiredSourceFile } from "./ts-morph-project";
+} from '../../shared/types/project-health';
+import { relativePosix } from '../../shared/fs/path-utils';
+import { detectDomain } from '../architecture/domain-boundary-rules';
+import { detectLayer } from '../architecture/layer-rules';
+import { calculateCyclomaticComplexity } from '../metrics/complexity/cyclomatic.metric';
+import { calculateCognitiveComplexity } from '../metrics/complexity/cognitive.metric';
+import { estimateNPathComplexity } from '../metrics/complexity/npath.metric';
+import { calculateMaintainabilityIndex } from '../metrics/maintainability/maintainability-index.metric';
+import { calculateFanOut } from '../metrics/coupling/fan-out.metric';
+import { getRequiredSourceFile } from './ts-morph-project';
 
 type FunctionLikeNode =
   | FunctionDeclaration
@@ -38,14 +38,14 @@ type FunctionLikeNode =
   | CallExpression;
 
 const HTTP_ROUTE_DECORATORS = new Set([
-  "Get",
-  "Post",
-  "Put",
-  "Patch",
-  "Delete",
-  "Options",
-  "Head",
-  "All",
+  'Get',
+  'Post',
+  'Put',
+  'Patch',
+  'Delete',
+  'Options',
+  'Head',
+  'All',
 ]);
 
 export function scanFileWithTsMorph(
@@ -67,7 +67,7 @@ export function scanFileWithTsMorph(
   const commentLines = countCommentLines(source);
   const publicExportCount = countPublicExports(sourceFile);
   const controllerCount = classes.filter((item) =>
-    item.decorators.includes("Controller"),
+    item.decorators.includes('Controller'),
   ).length;
   const endpointCount = functions.filter((item) =>
     item.decorators.some((decorator) => HTTP_ROUTE_DECORATORS.has(decorator)),
@@ -132,7 +132,7 @@ function extractImports(
       imports.push({
         source,
         resolvedPath: undefined,
-        isRelative: source.startsWith("."),
+        isRelative: source.startsWith('.'),
       });
       continue;
     }
@@ -141,7 +141,7 @@ function extractImports(
       imports.push({
         source,
         resolvedPath: resolveImport(cwd, resolvedPath, allFiles),
-        isRelative: source.startsWith("."),
+        isRelative: source.startsWith('.'),
       });
     }
   }
@@ -150,7 +150,7 @@ function extractImports(
     SyntaxKind.CallExpression,
   )) {
     const expressionText = callExpression.getExpression().getText();
-    if (expressionText !== "require") {
+    if (expressionText !== 'require') {
       continue;
     }
 
@@ -167,7 +167,7 @@ function extractImports(
         resolveRelativeImport(sourceFile, source, allFiles),
         allFiles,
       ),
-      isRelative: source.startsWith("."),
+      isRelative: source.startsWith('.'),
     });
   }
 
@@ -219,7 +219,7 @@ function resolveRelativeImport(
   source: string,
   allFiles: string[],
 ): string | undefined {
-  if (!source.startsWith(".")) {
+  if (!source.startsWith('.')) {
     return undefined;
   }
 
@@ -230,8 +230,8 @@ function resolveRelativeImport(
   const candidates = [
     `${absoluteBase}.ts`,
     `${absoluteBase}.tsx`,
-    path.join(absoluteBase, "index.ts"),
-    path.join(absoluteBase, "index.tsx"),
+    path.join(absoluteBase, 'index.ts'),
+    path.join(absoluteBase, 'index.tsx'),
   ];
 
   return candidates.find((candidate) => allFiles.includes(candidate));
@@ -246,7 +246,7 @@ function extractClasses(sourceFile: SourceFile): ClassAnalysis[] {
       .map((method) => method.getName());
 
     return {
-      name: classDeclaration.getName() ?? "AnonymousClass",
+      name: classDeclaration.getName() ?? 'AnonymousClass',
       decorators: classDeclaration
         .getDecorators()
         .map((decorator) => decorator.getName()),
@@ -267,7 +267,7 @@ function extractFunctions(sourceFile: SourceFile): FunctionAnalysis[] {
         createFunctionAnalysis(
           sourceFile,
           declaration,
-          declaration.getName() ?? "anonymous",
+          declaration.getName() ?? 'anonymous',
         ),
       ),
     ...sourceFile.getClasses().flatMap((classDeclaration) => [
@@ -277,7 +277,7 @@ function extractFunctions(sourceFile: SourceFile): FunctionAnalysis[] {
           createFunctionAnalysis(
             sourceFile,
             constructorDeclaration,
-            "constructor",
+            'constructor',
           ),
         ),
       ...classDeclaration.getMethods().map((method) =>
@@ -417,21 +417,21 @@ function countCommentLines(source: string): number {
     const trimmed = line.trim();
     if (inBlockComment) {
       count += 1;
-      if (trimmed.includes("*/")) {
+      if (trimmed.includes('*/')) {
         inBlockComment = false;
       }
       continue;
     }
 
-    if (trimmed.startsWith("//")) {
+    if (trimmed.startsWith('//')) {
       count += 1;
       continue;
     }
 
-    const blockStart = trimmed.indexOf("/*");
+    const blockStart = trimmed.indexOf('/*');
     if (blockStart !== -1) {
       count += 1;
-      if (!trimmed.slice(blockStart + 2).includes("*/")) {
+      if (!trimmed.slice(blockStart + 2).includes('*/')) {
         inBlockComment = true;
       }
     }

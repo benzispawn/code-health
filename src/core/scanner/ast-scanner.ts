@@ -1,28 +1,28 @@
-import fs from "node:fs";
-import path from "node:path";
-import type { CodeHealthConfig } from "../../shared/types/config";
+import fs from 'node:fs';
+import path from 'node:path';
+import type { CodeHealthConfig } from '../../shared/types/config';
 import type {
   ClassAnalysis,
   FileAnalysis,
   FunctionAnalysis,
   ImportAnalysis,
-} from "../../shared/types/project-health";
-import { relativePosix, stripExtension } from "../../shared/fs/path-utils";
-import { detectDomain } from "../architecture/domain-boundary-rules";
-import { detectLayer } from "../architecture/layer-rules";
-import { calculateCyclomaticComplexity } from "../metrics/complexity/cyclomatic.metric";
-import { calculateCognitiveComplexity } from "../metrics/complexity/cognitive.metric";
-import { estimateNPathComplexity } from "../metrics/complexity/npath.metric";
-import { calculateMaintainabilityIndex } from "../metrics/maintainability/maintainability-index.metric";
-import { calculateFanOut } from "../metrics/coupling/fan-out.metric";
+} from '../../shared/types/project-health';
+import { relativePosix, stripExtension } from '../../shared/fs/path-utils';
+import { detectDomain } from '../architecture/domain-boundary-rules';
+import { detectLayer } from '../architecture/layer-rules';
+import { calculateCyclomaticComplexity } from '../metrics/complexity/cyclomatic.metric';
+import { calculateCognitiveComplexity } from '../metrics/complexity/cognitive.metric';
+import { estimateNPathComplexity } from '../metrics/complexity/npath.metric';
+import { calculateMaintainabilityIndex } from '../metrics/maintainability/maintainability-index.metric';
+import { calculateFanOut } from '../metrics/coupling/fan-out.metric';
 
 const CONTROL_NAMES = new Set([
-  "if",
-  "for",
-  "while",
-  "switch",
-  "catch",
-  "function",
+  'if',
+  'for',
+  'while',
+  'switch',
+  'catch',
+  'function',
 ]);
 
 export function scanFile(
@@ -31,7 +31,7 @@ export function scanFile(
   allFiles: string[],
   config: CodeHealthConfig,
 ): FileAnalysis {
-  const source = fs.readFileSync(filePath, "utf8");
+  const source = fs.readFileSync(filePath, 'utf8');
   const relativePath = relativePosix(cwd, filePath);
   const imports = extractImports(cwd, filePath, source, allFiles);
   const functions = extractFunctions(source);
@@ -78,7 +78,7 @@ export function scanFile(
       dependencyDepth: 0,
       publicExportCount: countPublicExports(source),
       controllerCount: classes.filter((item) =>
-        item.decorators.includes("Controller"),
+        item.decorators.includes('Controller'),
       ).length,
       endpointCount: countEndpointDecorators(source),
       fanIn: 0,
@@ -100,8 +100,8 @@ function extractImports(
   let match = importPattern.exec(source);
 
   while (match) {
-    const sourcePath = match[1] ?? match[2] ?? match[3] ?? "";
-    const isRelative = sourcePath.startsWith(".");
+    const sourcePath = match[1] ?? match[2] ?? match[3] ?? '';
+    const isRelative = sourcePath.startsWith('.');
     imports.push({
       source: sourcePath,
       resolvedPath: isRelative
@@ -125,8 +125,8 @@ function resolveRelativeImport(
   const candidates = [
     `${absoluteBase}.ts`,
     `${absoluteBase}.tsx`,
-    path.join(absoluteBase, "index.ts"),
-    path.join(absoluteBase, "index.tsx"),
+    path.join(absoluteBase, 'index.ts'),
+    path.join(absoluteBase, 'index.tsx'),
   ];
   const found = candidates.find((candidate) => allFiles.includes(candidate));
   return found ? relativePosix(cwd, found) : undefined;
@@ -139,13 +139,13 @@ function extractFunctions(source: string): FunctionAnalysis[] {
   let match = pattern.exec(source);
 
   while (match) {
-    const name = match[1] ?? match[3] ?? "anonymous";
+    const name = match[1] ?? match[3] ?? 'anonymous';
     if (CONTROL_NAMES.has(name)) {
       match = pattern.exec(source);
       continue;
     }
 
-    const bodyStart = source.indexOf("{", match.index);
+    const bodyStart = source.indexOf('{', match.index);
     const bodyEnd = findMatchingBrace(source, bodyStart);
     if (bodyEnd === -1) {
       match = pattern.exec(source);
@@ -155,7 +155,7 @@ function extractFunctions(source: string): FunctionAnalysis[] {
     const body = source.slice(bodyStart, bodyEnd + 1);
     const lineStart = lineNumberAt(source, match.index);
     const lineEnd = lineNumberAt(source, bodyEnd);
-    const parameters = splitParameters(match[2] ?? match[4] ?? "");
+    const parameters = splitParameters(match[2] ?? match[4] ?? '');
     const cyclomaticComplexity = calculateCyclomaticComplexity(body);
 
     functions.push({
@@ -188,22 +188,22 @@ function extractConstFunctions(
   let match = pattern.exec(source);
 
   while (match) {
-    const name = match[1] ?? match[4] ?? "anonymous";
+    const name = match[1] ?? match[4] ?? 'anonymous';
     if (existingNames.has(name)) {
       match = pattern.exec(source);
       continue;
     }
 
-    const bodyStart = source.indexOf("{", match.index);
+    const bodyStart = source.indexOf('{', match.index);
     const bodyEnd =
       bodyStart === -1 ? match.index : findMatchingBrace(source, bodyStart);
     const body =
       bodyEnd === -1
-        ? source.slice(match.index, source.indexOf("\n", match.index))
+        ? source.slice(match.index, source.indexOf('\n', match.index))
         : source.slice(bodyStart, bodyEnd + 1);
     const lineStart = lineNumberAt(source, match.index);
     const lineEnd = bodyEnd === -1 ? lineStart : lineNumberAt(source, bodyEnd);
-    const parameters = splitParameters(match[2] ?? match[3] ?? "");
+    const parameters = splitParameters(match[2] ?? match[3] ?? '');
 
     functions.push({
       name,
@@ -230,12 +230,12 @@ function extractClasses(source: string): ClassAnalysis[] {
   let match = pattern.exec(source);
 
   while (match) {
-    const decoratorsSource = match[1] ?? match[3] ?? "";
-    const name = match[2] ?? match[4] ?? "AnonymousClass";
-    const bodyStart = source.indexOf("{", match.index);
+    const decoratorsSource = match[1] ?? match[3] ?? '';
+    const name = match[2] ?? match[4] ?? 'AnonymousClass';
+    const bodyStart = source.indexOf('{', match.index);
     const bodyEnd =
       bodyStart === -1 ? match.index : findMatchingBrace(source, bodyStart);
-    const body = bodyEnd === -1 ? "" : source.slice(bodyStart, bodyEnd + 1);
+    const body = bodyEnd === -1 ? '' : source.slice(bodyStart, bodyEnd + 1);
 
     const methods = extractFunctions(body).map((method) => method.name);
     const lineStart = lineNumberAt(source, match.index);
@@ -264,7 +264,7 @@ function extractClasses(source: string): ClassAnalysis[] {
 
 function findMatchingBrace(source: string, openIndex: number): number {
   let depth = 0;
-  let inString: '"' | "'" | "`" | undefined;
+  let inString: '"' | "'" | '`' | undefined;
   let escaped = false;
 
   for (let index = openIndex; index < source.length; index += 1) {
@@ -274,7 +274,7 @@ function findMatchingBrace(source: string, openIndex: number): number {
         escaped = false;
         continue;
       }
-      if (char === "\\") {
+      if (char === '\\') {
         escaped = true;
         continue;
       }
@@ -283,14 +283,14 @@ function findMatchingBrace(source: string, openIndex: number): number {
       }
       continue;
     }
-    if (char === '"' || char === "'" || char === "`") {
+    if (char === '"' || char === "'" || char === '`') {
       inString = char;
       continue;
     }
-    if (char === "{") {
+    if (char === '{') {
       depth += 1;
     }
-    if (char === "}") {
+    if (char === '}') {
       depth -= 1;
       if (depth === 0) {
         return index;
@@ -306,7 +306,7 @@ function splitParameters(parameters: string): string[] {
     return [];
   }
   return parameters
-    .split(",")
+    .split(',')
     .map((parameter) => parameter.trim())
     .filter(Boolean);
 }
@@ -345,19 +345,19 @@ function countCommentLines(source: string): number {
     const trimmed = line.trim();
     if (inBlockComment) {
       count += 1;
-      if (trimmed.includes("*/")) {
+      if (trimmed.includes('*/')) {
         inBlockComment = false;
       }
       continue;
     }
-    if (trimmed.startsWith("//")) {
+    if (trimmed.startsWith('//')) {
       count += 1;
       continue;
     }
-    const blockStart = trimmed.indexOf("/*");
+    const blockStart = trimmed.indexOf('/*');
     if (blockStart !== -1) {
       count += 1;
-      if (!trimmed.slice(blockStart + 2).includes("*/")) {
+      if (!trimmed.slice(blockStart + 2).includes('*/')) {
         inBlockComment = true;
       }
     }

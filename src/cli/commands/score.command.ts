@@ -1,4 +1,4 @@
-import { scanFromFlags } from "./command-utils";
+import { scanFromFlags } from './command-utils';
 import {
   formatRating,
   rateApiSurface,
@@ -10,7 +10,7 @@ import {
   ratePackageCycles,
   ratePublicExports,
   rateScore,
-} from "../../core/reporting/rating";
+} from '../../core/reporting/rating';
 
 export async function scoreCommand(
   flags: Record<string, string | boolean>,
@@ -19,8 +19,8 @@ export async function scoreCommand(
   console.log(
     `Project Health: ${report.summary.score}/100 ${formatRating(rateScore(report.summary.score))}`,
   );
-  console.log("");
-  console.log("Score Breakdown:");
+  console.log('');
+  console.log('Score Breakdown:');
   console.log(
     `- Architecture: ${report.summary.architectureScore}/100 ${formatRating(rateScore(report.summary.architectureScore))}`,
   );
@@ -36,8 +36,8 @@ export async function scoreCommand(
   console.log(
     `- Testability: ${report.summary.testabilityScore}/100 ${formatRating(rateScore(report.summary.testabilityScore))}`,
   );
-  console.log("");
-  console.log("Risk Signals:");
+  console.log('');
+  console.log('Risk Signals:');
   console.log(
     `- Duplication: ${report.summary.duplicationPercent}% ${formatRating(rateDuplication(report.summary.duplicationPercent))}`,
   );
@@ -68,5 +68,5 @@ export async function scoreCommand(
 }
 
 function formatPercent(value: number | undefined): string {
-  return value === undefined ? "not found" : `${value}%`;
+  return value === undefined ? 'not found' : `${value}%`;
 }
