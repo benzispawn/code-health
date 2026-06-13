@@ -9,5 +9,11 @@ describe('code-health scan', () => {
 
     expect(output).toContain('Project Health:');
     expect(output).toContain('src/billing/billing.controller.ts: controller file imports disallowed repository file');
+    expect(output).toContain('Score Breakdown:');
+    expect(output).toContain('- Coupling:');
+    expect(output).toContain('Risk Signals:');
+    expect(output).toContain('- Max Dependency Depth:');
+    expect(output).toContain('- API Surface Size:');
+    expect(output).toContain('- Line Coverage: not found');
   });
 });

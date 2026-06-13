@@ -12,9 +12,7 @@ export function calculateHotspots(files: FileAnalysis[], architecture: Architect
       const complexityScore = Math.min(100, Math.max(file.metrics.cyclomaticComplexity, file.metrics.cognitiveComplexity) * 5);
       const churnScore = Math.round(((file.metrics.churn ?? 0) / maxChurn) * 100);
       const architectureRisk = architecture.violations.some((violation) => violation.file === file.path) ? 100 : 20;
-      const refactorPriority = Math.round(
-        (complexityScore * 0.45) + (churnScore * 0.35) + (architectureRisk * 0.2),
-      );
+      const refactorPriority = Math.round((complexityScore / 100) * (churnScore / 100) * 100);
 
       return {
         file: file.path,

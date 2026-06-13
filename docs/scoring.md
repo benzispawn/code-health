@@ -110,7 +110,7 @@ Architecture errors are usually more important than raw complexity because they 
 
 The current implementation uses available test confidence signals. When no coverage data is available, the score uses a neutral default rather than pretending confidence is high.
 
-Future versions can expand this with LCOV parsing, branch coverage, mutation score, and test-to-code ratios.
+Current LCOV support includes line and branch coverage. Future versions can add mutation score, untested critical files, and test-to-code ratios.
 
 ## File Score
 

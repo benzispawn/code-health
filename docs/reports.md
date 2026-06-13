@@ -52,9 +52,9 @@ Main sections:
 | --- | --- |
 | `project` | Project metadata |
 | `summary` | Overall score and category scores |
-| `files` | Per-file metrics and scores |
+| `files` | Per-file metrics, API surface counts, coverage, duplication, and scores |
 | `domains` | Domain-level summary |
-| `architecture` | Violations, cycles, dependency graph |
+| `architecture` | Violations, file cycles, package cycles, dependency graph |
 | `hotspots` | Refactor priority ranking |
 | `recommendations` | Suggested next actions |
 

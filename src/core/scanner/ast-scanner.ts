@@ -25,8 +25,12 @@ export function scanFile(cwd: string, filePath: string, allFiles: string[], conf
   const functions = extractFunctions(source);
   const classes = extractClasses(source);
   const loc = countLoc(source);
+  const physicalLoc = countPhysicalLoc(source);
+  const logicalLoc = countLogicalLoc(source);
+  const commentLines = countCommentLines(source);
   const cyclomaticComplexity = sum(functions.map((item) => item.cyclomaticComplexity));
   const cognitiveComplexity = sum(functions.map((item) => item.cognitiveComplexity));
+  const npathComplexity = sum(functions.map((item) => item.npathComplexity ?? 0));
   const maintainabilityIndex = calculateMaintainabilityIndex({
     loc,
     cyclomaticComplexity,
@@ -46,6 +50,16 @@ export function scanFile(cwd: string, filePath: string, allFiles: string[], conf
       maintainabilityIndex,
       cyclomaticComplexity,
       cognitiveComplexity,
+      npathComplexity,
+      physicalLoc,
+      logicalLoc,
+      commentLines,
+      commentRatio: physicalLoc === 0 ? 0 : Math.round((commentLines / physicalLoc) * 100),
+      duplicationPercent: 0,
+      dependencyDepth: 0,
+      publicExportCount: countPublicExports(source),
+      controllerCount: classes.filter((item) => item.decorators.includes('Controller')).length,
+      endpointCount: countEndpointDecorators(source),
       fanIn: 0,
       fanOut: calculateFanOut(imports),
     },
@@ -115,6 +129,7 @@ function extractFunctions(source: string): FunctionAnalysis[] {
       lineStart,
       lineEnd,
       loc: Math.max(1, lineEnd - lineStart + 1),
+      decorators: [],
       cyclomaticComplexity,
       cognitiveComplexity: calculateCognitiveComplexity(body),
       npathComplexity: estimateNPathComplexity(body),
@@ -154,6 +169,7 @@ function extractConstFunctions(source: string, existing: FunctionAnalysis[]): Fu
       lineStart,
       lineEnd,
       loc: Math.max(1, lineEnd - lineStart + 1),
+      decorators: [],
       cyclomaticComplexity: calculateCyclomaticComplexity(body),
       cognitiveComplexity: calculateCognitiveComplexity(body),
       npathComplexity: estimateNPathComplexity(body),
@@ -178,12 +194,18 @@ function extractClasses(source: string): ClassAnalysis[] {
     const bodyEnd = bodyStart === -1 ? match.index : findMatchingBrace(source, bodyStart);
     const body = bodyEnd === -1 ? '' : source.slice(bodyStart, bodyEnd + 1);
 
+    const methods = extractFunctions(body).map((method) => method.name);
+    const lineStart = lineNumberAt(source, match.index);
+    const lineEnd = bodyEnd === -1 ? lineNumberAt(source, match.index) : lineNumberAt(source, bodyEnd);
+
     classes.push({
       name,
       decorators: [...decoratorsSource.matchAll(/@([A-Za-z_$][\w$]*)/g)].map((decorator) => decorator[1]),
-      lineStart: lineNumberAt(source, match.index),
-      lineEnd: bodyEnd === -1 ? lineNumberAt(source, match.index) : lineNumberAt(source, bodyEnd),
-      methods: extractFunctions(body).map((method) => method.name),
+      lineStart,
+      lineEnd,
+      loc: Math.max(1, lineEnd - lineStart + 1),
+      methods,
+      methodCount: methods.length,
     });
 
     match = pattern.exec(source);
@@ -244,6 +266,57 @@ function lineNumberAt(source: string, index: number): number {
 
 function countLoc(source: string): number {
   return source.split(/\r?\n/).filter((line) => line.trim().length > 0).length;
+}
+
+function countPhysicalLoc(source: string): number {
+  if (!source) {
+    return 0;
+  }
+  return source.split(/\r?\n/).length;
+}
+
+function countLogicalLoc(source: string): number {
+  return source
+    .split(/\r?\n/)
+    .filter((line) => /(;|\b(if|for|while|switch|try|catch|return|throw|break|continue)\b)/.test(line.trim())).length;
+}
+
+function countCommentLines(source: string): number {
+  const lines = source.split(/\r?\n/);
+  let count = 0;
+  let inBlockComment = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (inBlockComment) {
+      count += 1;
+      if (trimmed.includes('*/')) {
+        inBlockComment = false;
+      }
+      continue;
+    }
+    if (trimmed.startsWith('//')) {
+      count += 1;
+      continue;
+    }
+    const blockStart = trimmed.indexOf('/*');
+    if (blockStart !== -1) {
+      count += 1;
+      if (!trimmed.slice(blockStart + 2).includes('*/')) {
+        inBlockComment = true;
+      }
+    }
+  }
+
+  return count;
+}
+
+function countPublicExports(source: string): number {
+  return source.match(/\bexport\s+(class|function|const|let|var|interface|type|enum)\b/g)?.length ?? 0;
+}
+
+function countEndpointDecorators(source: string): number {
+  return source.match(/@(Get|Post|Put|Patch|Delete|Options|Head|All)\b/g)?.length ?? 0;
 }
 
 function sum(values: number[]): number {

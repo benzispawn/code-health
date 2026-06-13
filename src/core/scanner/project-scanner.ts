@@ -1,9 +1,14 @@
+import fs from 'node:fs';
 import { CodeHealthConfig } from '../../shared/types/config';
 import { DomainAnalysis, ProjectHealthReport } from '../../shared/types/project-health';
+import { relativePosix } from '../../shared/fs/path-utils';
 import { validateArchitecture } from '../architecture/architecture-validator';
+import { calculateDependencyDepths } from '../architecture/dependency-graph';
 import { readGitChurn } from '../git/churn-reader';
 import { calculateHotspots } from '../git/hotspot-calculator';
 import { applyFanIn } from '../metrics/coupling/fan-in.metric';
+import { readLcovCoverage } from '../metrics/coverage/lcov-reader';
+import { calculateDuplicationMetrics } from '../metrics/maintainability/duplication.metric';
 import { applyFileScores, calculateHealthSummary } from '../scoring/health-score-calculator';
 import { createRefactorRecommendations } from '../scoring/refactor-priority-calculator';
 import { findSourceFiles } from './file-scanner';
@@ -23,19 +28,47 @@ export function scanProject(options: ScanProjectOptions): ProjectHealthReport {
   const scannedFiles = sourceFiles.map((filePath) =>
     scanFileWithTsMorph(options.cwd, filePath, sourceFiles, options.config, project),
   );
+  const sourceFilesByRelativePath = new Map(sourceFiles.map((filePath) => [relativePosix(options.cwd, filePath), filePath]));
   const churn = options.includeGit === false ? new Map<string, number>() : readGitChurn(options.cwd);
-  const filesWithFanIn = applyFanIn(scannedFiles).map((file) => ({
+  const coverage = readLcovCoverage(options.cwd);
+  const duplication = calculateDuplicationMetrics(
+    scannedFiles.map((file) => ({
+      path: file.path,
+      source: fs.readFileSync(sourceFilesByRelativePath.get(file.path) as string, 'utf8'),
+    })),
+  );
+  const filesWithSignals = applyFanIn(scannedFiles).map((file) => {
+    const coverageEntry = coverage.get(file.path);
+
+    return {
     ...file,
     metrics: {
       ...file.metrics,
       churn: churn.get(file.path) ?? 0,
+      duplicationPercent: duplication.fileDuplicationPercent.get(file.path) ?? 0,
+      coverage: coverageEntry?.lineCoverage,
+      lineCoverage: coverageEntry?.lineCoverage,
+      branchCoverage: coverageEntry?.branchCoverage,
+    },
+  };
+  });
+  const initialArchitecture = validateArchitecture(filesWithSignals, options.config);
+  const dependencyDepths = calculateDependencyDepths(initialArchitecture.dependencyGraph);
+  const filesWithDepth = filesWithSignals.map((file) => ({
+    ...file,
+    metrics: {
+      ...file.metrics,
+      dependencyDepth: dependencyDepths.get(file.path) ?? 0,
     },
   }));
-  const scoredFiles = applyFileScores(filesWithFanIn, options.config);
+  const scoredFiles = applyFileScores(filesWithDepth, options.config);
   const architecture = validateArchitecture(scoredFiles, options.config);
   const hotspots = calculateHotspots(scoredFiles, architecture);
   const recommendations = createRefactorRecommendations(scoredFiles, architecture);
-  const summary = calculateHealthSummary(scoredFiles, architecture, options.config);
+  const summary = {
+    ...calculateHealthSummary(scoredFiles, architecture, options.config),
+    duplicationPercent: duplication.projectDuplicationPercent,
+  };
 
   return {
     project: {
@@ -49,6 +82,10 @@ export function scanProject(options: ScanProjectOptions): ProjectHealthReport {
     files: scoredFiles,
     domains: calculateDomains(scoredFiles, architecture.violations),
     architecture,
+    duplication: {
+      percent: duplication.projectDuplicationPercent,
+      groups: duplication.groups,
+    },
     hotspots,
     recommendations,
     generatedAt: new Date().toISOString(),
