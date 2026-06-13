@@ -29,7 +29,9 @@
     "test:unit": "vitest run tests/unit",
     "pretest:integration": "npm run build",
     "test:integration": "vitest run tests/integration",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "depcruise": "depcruise src --config .dependency-cruiser.js",
+    "depcruise:graph": "depcruise src --config .dependency-cruiser.js --output-type dot | dot -T svg > dependency-graph.svg"
   },
   "devDependencies": {
     "@types/node": "^25.9.2",
@@ -44,6 +46,7 @@
     "vitest": "^2.1.9"
   },
   "dependencies": {
-    "ts-morph": "^28.0.0"
+    "ts-morph": "^28.0.0",
+    "dependency-cruiser": "^17.4.3"
   }
 }
