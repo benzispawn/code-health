@@ -105,7 +105,7 @@ Not yet validated:
 - return types
 - event payload shapes
 
-These are natural next steps once the scanner moves from regex-based extraction to full AST analysis with `ts-morph`.
+These are natural next steps now that the scanner uses `ts-morph` and can be extended with richer NestJS metadata extraction.
 
 ## How To Read Results
 

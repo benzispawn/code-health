@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@billing/*": ["src/billing/*"]
+    }
+  },
+  "include": ["src/**/*.ts"]
+}

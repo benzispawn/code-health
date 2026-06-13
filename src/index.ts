@@ -8,6 +8,8 @@ export * from './core/git/hotspot-calculator';
 export * from './core/reporting/json-reporter';
 export * from './core/reporting/markdown-reporter';
 export * from './core/scanner/project-scanner';
+export * from './core/scanner/ts-morph-file-scanner';
+export * from './core/scanner/ts-morph-project';
 export * from './core/scoring/health-score-calculator';
 export * from './core/scoring/refactor-priority-calculator';
 export * from './core/spec/spec-comparator';

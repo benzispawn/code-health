@@ -7,7 +7,8 @@ import { applyFanIn } from '../metrics/coupling/fan-in.metric';
 import { applyFileScores, calculateHealthSummary } from '../scoring/health-score-calculator';
 import { createRefactorRecommendations } from '../scoring/refactor-priority-calculator';
 import { findSourceFiles } from './file-scanner';
-import { scanFile } from './ast-scanner';
+import { scanFileWithTsMorph } from './ts-morph-file-scanner';
+import { createTsMorphProject } from './ts-morph-project';
 
 export interface ScanProjectOptions {
   cwd: string;
@@ -18,7 +19,10 @@ export interface ScanProjectOptions {
 
 export function scanProject(options: ScanProjectOptions): ProjectHealthReport {
   const sourceFiles = findSourceFiles(options.cwd, options.config, options.domain);
-  const scannedFiles = sourceFiles.map((filePath) => scanFile(options.cwd, filePath, sourceFiles, options.config));
+  const project = createTsMorphProject(options.cwd, sourceFiles);
+  const scannedFiles = sourceFiles.map((filePath) =>
+    scanFileWithTsMorph(options.cwd, filePath, sourceFiles, options.config, project),
+  );
   const churn = options.includeGit === false ? new Map<string, number>() : readGitChurn(options.cwd);
   const filesWithFanIn = applyFanIn(scannedFiles).map((file) => ({
     ...file,
