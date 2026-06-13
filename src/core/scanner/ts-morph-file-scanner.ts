@@ -38,6 +38,8 @@ type FunctionLikeNode =
   | FunctionExpression
   | CallExpression;
 
+const HTTP_ROUTE_DECORATORS = new Set(['Get', 'Post', 'Put', 'Patch', 'Delete', 'Options', 'Head', 'All']);
+
 export function scanFileWithTsMorph(
   cwd: string,
   filePath: string,
@@ -50,9 +52,17 @@ export function scanFileWithTsMorph(
   const imports = extractImports(cwd, sourceFile, allFiles);
   const classes = extractClasses(sourceFile);
   const functions = extractFunctions(sourceFile);
-  const loc = countLoc(sourceFile.getFullText());
+  const source = sourceFile.getFullText();
+  const loc = countLoc(source);
+  const physicalLoc = countPhysicalLoc(source);
+  const logicalLoc = countLogicalLoc(sourceFile);
+  const commentLines = countCommentLines(source);
+  const publicExportCount = countPublicExports(sourceFile);
+  const controllerCount = classes.filter((item) => item.decorators.includes('Controller')).length;
+  const endpointCount = functions.filter((item) => item.decorators.some((decorator) => HTTP_ROUTE_DECORATORS.has(decorator))).length;
   const cyclomaticComplexity = sum(functions.map((item) => item.cyclomaticComplexity));
   const cognitiveComplexity = sum(functions.map((item) => item.cognitiveComplexity));
+  const npathComplexity = sum(functions.map((item) => item.npathComplexity ?? 0));
   const maintainabilityIndex = calculateMaintainabilityIndex({
     loc,
     cyclomaticComplexity,
@@ -71,6 +81,16 @@ export function scanFileWithTsMorph(
       maintainabilityIndex,
       cyclomaticComplexity,
       cognitiveComplexity,
+      npathComplexity,
+      physicalLoc,
+      logicalLoc,
+      commentLines,
+      commentRatio: physicalLoc === 0 ? 0 : Math.round((commentLines / physicalLoc) * 100),
+      duplicationPercent: 0,
+      dependencyDepth: 0,
+      publicExportCount,
+      controllerCount,
+      endpointCount,
       fanIn: 0,
       fanOut: calculateFanOut(imports),
     },
@@ -169,23 +189,35 @@ function resolveRelativeImport(sourceFile: SourceFile, source: string, allFiles:
 }
 
 function extractClasses(sourceFile: SourceFile): ClassAnalysis[] {
-  return sourceFile.getClasses().map((classDeclaration) => ({
-    name: classDeclaration.getName() ?? 'AnonymousClass',
-    decorators: classDeclaration.getDecorators().map((decorator) => decorator.getName()),
-    lineStart: lineAt(sourceFile, classDeclaration.getStart()),
-    lineEnd: lineAt(sourceFile, classDeclaration.getEnd()),
-    methods: classDeclaration.getMethods().map((method) => method.getName()),
-  }));
+  return sourceFile.getClasses().map((classDeclaration) => {
+    const lineStart = lineAt(sourceFile, classDeclaration.getStart());
+    const lineEnd = lineAt(sourceFile, classDeclaration.getEnd());
+    const methods = classDeclaration.getMethods().map((method) => method.getName());
+
+    return {
+      name: classDeclaration.getName() ?? 'AnonymousClass',
+      decorators: classDeclaration.getDecorators().map((decorator) => decorator.getName()),
+      lineStart,
+      lineEnd,
+      loc: Math.max(1, lineEnd - lineStart + 1),
+      methods,
+      methodCount: methods.length,
+    };
+  });
 }
 
 function extractFunctions(sourceFile: SourceFile): FunctionAnalysis[] {
   return [
-    ...sourceFile.getFunctions().map((declaration) => createFunctionAnalysis(sourceFile, declaration, declaration.getName() ?? 'anonymous')),
+    ...sourceFile.getFunctions().map((declaration) =>
+      createFunctionAnalysis(sourceFile, declaration, declaration.getName() ?? 'anonymous'),
+    ),
     ...sourceFile.getClasses().flatMap((classDeclaration) => [
       ...classDeclaration.getConstructors().map((constructorDeclaration) =>
         createFunctionAnalysis(sourceFile, constructorDeclaration, 'constructor'),
       ),
-      ...classDeclaration.getMethods().map((method) => createFunctionAnalysis(sourceFile, method, method.getName())),
+      ...classDeclaration.getMethods().map((method) =>
+        createFunctionAnalysis(sourceFile, method, method.getName(), method.getDecorators().map((decorator) => decorator.getName())),
+      ),
     ]),
     ...extractTopLevelConstFunctions(sourceFile),
   ];
@@ -217,7 +249,12 @@ function isTopLevelVariableDeclaration(declaration: VariableDeclaration): boolea
   return statement?.getParentIfKind(SyntaxKind.SourceFile) !== undefined;
 }
 
-function createFunctionAnalysis(sourceFile: SourceFile, node: FunctionLikeNode, name: string): FunctionAnalysis {
+function createFunctionAnalysis(
+  sourceFile: SourceFile,
+  node: FunctionLikeNode,
+  name: string,
+  decorators: string[] = [],
+): FunctionAnalysis {
   const text = node.getText();
   const lineStart = lineAt(sourceFile, node.getStart());
   const lineEnd = lineAt(sourceFile, node.getEnd());
@@ -227,11 +264,16 @@ function createFunctionAnalysis(sourceFile: SourceFile, node: FunctionLikeNode, 
     lineStart,
     lineEnd,
     loc: Math.max(1, lineEnd - lineStart + 1),
+    decorators,
     cyclomaticComplexity: calculateCyclomaticComplexity(text),
     cognitiveComplexity: calculateCognitiveComplexity(text),
     npathComplexity: estimateNPathComplexity(text),
     parameterCount: getParameterCount(node),
   };
+}
+
+function countPublicExports(sourceFile: SourceFile): number {
+  return sourceFile.getExportedDeclarations().size;
 }
 
 function getParameterCount(node: FunctionLikeNode): number {
@@ -247,6 +289,71 @@ function lineAt(sourceFile: SourceFile, position: number): number {
 
 function countLoc(source: string): number {
   return source.split(/\r?\n/).filter((line) => line.trim().length > 0).length;
+}
+
+function countPhysicalLoc(source: string): number {
+  if (!source) {
+    return 0;
+  }
+  return source.split(/\r?\n/).length;
+}
+
+function countLogicalLoc(sourceFile: SourceFile): number {
+  return sourceFile.getDescendants().filter((node) => isLogicalStatement(node.getKind())).length;
+}
+
+function isLogicalStatement(kind: SyntaxKind): boolean {
+  switch (kind) {
+    case SyntaxKind.VariableStatement:
+    case SyntaxKind.ExpressionStatement:
+    case SyntaxKind.ReturnStatement:
+    case SyntaxKind.IfStatement:
+    case SyntaxKind.ForStatement:
+    case SyntaxKind.ForInStatement:
+    case SyntaxKind.ForOfStatement:
+    case SyntaxKind.WhileStatement:
+    case SyntaxKind.DoStatement:
+    case SyntaxKind.SwitchStatement:
+    case SyntaxKind.TryStatement:
+    case SyntaxKind.ThrowStatement:
+    case SyntaxKind.BreakStatement:
+    case SyntaxKind.ContinueStatement:
+      return true;
+    default:
+      return false;
+  }
+}
+
+function countCommentLines(source: string): number {
+  const lines = source.split(/\r?\n/);
+  let count = 0;
+  let inBlockComment = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (inBlockComment) {
+      count += 1;
+      if (trimmed.includes('*/')) {
+        inBlockComment = false;
+      }
+      continue;
+    }
+
+    if (trimmed.startsWith('//')) {
+      count += 1;
+      continue;
+    }
+
+    const blockStart = trimmed.indexOf('/*');
+    if (blockStart !== -1) {
+      count += 1;
+      if (!trimmed.slice(blockStart + 2).includes('*/')) {
+        inBlockComment = true;
+      }
+    }
+  }
+
+  return count;
 }
 
 function sum(values: number[]): number {

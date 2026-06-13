@@ -1,4 +1,5 @@
 import { compareSpecCommand } from './commands/compare-spec.command';
+import { duplicationCommand } from './commands/duplication.command';
 import { hotspotsCommand } from './commands/hotspots.command';
 import { initCommand } from './commands/init.command';
 import { reportCommand } from './commands/report.command';
@@ -29,6 +30,10 @@ export async function runCli(argv: string[]): Promise<void> {
   }
   if (args.command === 'score') {
     await scoreCommand(args.flags);
+    return;
+  }
+  if (args.command === 'duplication') {
+    await duplicationCommand(args.flags);
     return;
   }
   if (args.command === 'report') {
@@ -93,6 +98,7 @@ Usage:
   code-health init
   code-health scan [--domain billing] [--config code-health.config.ts]
   code-health score
+  code-health duplication [--show-code] [--limit 10]
   code-health report [--format json|markdown|html]
   code-health validate-architecture
   code-health hotspots
@@ -103,6 +109,7 @@ Commands:
   init                  Creates code-health.config.ts
   scan                  Scans source code and extracts metrics
   score                 Calculates the project health score
+  duplication           Shows duplicated code blocks and locations
   report                Generates JSON, Markdown, or HTML reports
   validate-architecture Checks layer and domain rules
   hotspots              Combines complexity and git churn

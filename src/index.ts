@@ -7,6 +7,7 @@ export * from './core/git/churn-reader';
 export * from './core/git/hotspot-calculator';
 export * from './core/reporting/json-reporter';
 export * from './core/reporting/markdown-reporter';
+export * from './core/reporting/duplication-reporter';
 export * from './core/scanner/project-scanner';
 export * from './core/scanner/ts-morph-file-scanner';
 export * from './core/scanner/ts-morph-project';

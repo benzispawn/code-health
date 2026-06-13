@@ -4,7 +4,7 @@ import {
   ArchitectureViolation,
   FileAnalysis,
 } from '../../shared/types/project-health';
-import { buildDependencyGraph, findCircularDependencies } from './dependency-graph';
+import { buildDependencyGraph, buildPackageDependencyGraph, findCircularDependencies } from './dependency-graph';
 
 export function validateArchitecture(files: FileAnalysis[], config: CodeHealthConfig): ArchitectureAnalysis {
   const violations: ArchitectureViolation[] = [];
@@ -31,6 +31,7 @@ export function validateArchitecture(files: FileAnalysis[], config: CodeHealthCo
 
   const dependencyGraph = buildDependencyGraph(files);
   const circularDependencies = findCircularDependencies(dependencyGraph);
+  const packageCycles = findCircularDependencies(buildPackageDependencyGraph(dependencyGraph));
 
   for (const cycle of circularDependencies) {
     violations.push({
@@ -41,12 +42,22 @@ export function validateArchitecture(files: FileAnalysis[], config: CodeHealthCo
     });
   }
 
+  for (const cycle of packageCycles) {
+    violations.push({
+      file: cycle.files[0],
+      rule: 'package-cycle',
+      message: `Package cycle detected: ${cycle.files.join(' -> ')}`,
+      severity: 'warning',
+    });
+  }
+
   const penalty = violations.reduce((total, violation) => total + (violation.severity === 'error' ? 12 : 5), 0);
 
   return {
     score: Math.max(0, 100 - penalty),
     violations,
     circularDependencies,
+    packageCycles,
     dependencyGraph,
   };
 }

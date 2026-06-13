@@ -120,6 +120,6 @@ export default defineConfig({
 
 ## Current Scope
 
-This package implements the CLI foundation and first-pass static analysis with `ts-morph`. The scanner extracts imports, classes, methods, functions, exported const decorator factories, NestJS-style layers, LOC, cyclomatic complexity, cognitive complexity, fan-in/fan-out, architecture violations, circular dependencies, git churn, hotspots, recommendations, and basic `domain.spec.yaml` compliance checks.
+This package implements the CLI foundation and first-pass static analysis with `ts-morph`. The scanner extracts imports, classes, methods, functions, exported const decorator factories, NestJS-style layers, LOC/SLOC, comment ratio, API surface, cyclomatic complexity, cognitive complexity, NPath estimates, duplication, fan-in/fan-out, dependency depth, architecture violations, circular dependencies, package cycles, LCOV coverage, git churn, hotspots, recommendations, and basic `domain.spec.yaml` compliance checks.
 
 The next natural phase is enriching the AST model with NestJS metadata so spec comparison can validate decorators, DTO fields, provider registration, guards, route methods, and route paths.

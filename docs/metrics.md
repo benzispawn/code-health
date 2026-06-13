@@ -131,17 +131,33 @@ Circular dependencies are architecture findings, not just coupling findings.
 
 They make module boundaries harder to understand and can cause runtime problems in NestJS dependency injection.
 
+### Dependency Depth
+
+Dependency depth is the longest outgoing dependency chain from a file.
+
+| Depth | Rating |
+| ---: | --- |
+| 0-2 | Good |
+| 3-5 | Acceptable |
+| 6-8 | Risky |
+| 9+ | Critical |
+
+Deep chains can make changes harder to reason about because a file indirectly depends on many implementation details.
+
 ## Testability
 
-Current testability support is intentionally conservative. If no coverage signal is available, Code Health does not assume the code is well tested.
+Code Health reads LCOV coverage from:
 
-Future coverage support can include:
+```txt
+coverage/lcov.info
+```
+
+Supported coverage metrics:
 
 - line coverage
 - branch coverage
-- mutation score
-- untested critical files
-- test-to-code ratio
+
+If no coverage signal is available for a file, Code Health uses a neutral default for testability scoring instead of assuming the file is well tested.
 
 ## Git Risk
 
@@ -155,6 +171,24 @@ High churn is not bad by itself. It becomes important when combined with:
 - architecture violations
 - low maintainability
 - low test confidence
+
+## Architecture Surface
+
+### API Surface Size
+
+API surface combines:
+
+- public exports
+- public controllers
+- public endpoints
+
+A large API surface is not automatically bad, but it increases the amount of behavior that other code can depend on.
+
+### Package Cycles
+
+Package cycles are circular dependencies between directories/packages rather than only individual files.
+
+They indicate that module boundaries may be unclear even when the file-level cycle is small.
 
 ## Recommended Reading Order
 
