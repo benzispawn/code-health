@@ -17,6 +17,8 @@ import { applyFanIn } from '../metrics/coupling/fan-in.metric';
 import { calculatePackageStability } from '../metrics/coupling/package-stability.metric';
 import { readLcovCoverage } from '../metrics/coverage/lcov-reader';
 import { calculateDuplicationMetrics } from '../metrics/maintainability/duplication.metric';
+import { calculateCrapScore } from '../metrics/testability/crap-score.metric';
+import { calculateEffectiveCoverage } from '../metrics/testability/effective-coverage.metric';
 import {
   applyFileScores,
   calculateHealthSummary,
@@ -74,10 +76,8 @@ export function scanProject(options: ScanProjectOptions): ProjectHealthReport {
   );
   const filesWithSignals = applyFanIn(scannedFiles).map((file) => {
     const coverageEntry = coverage.get(file.path);
-
-    return {
+    const fileWithCoverage = {
       ...file,
-      changeCoupling: changeCoupling.byFile.get(file.path) ?? [],
       metrics: {
         ...file.metrics,
         churn: churn.get(file.path) ?? 0,
@@ -86,6 +86,25 @@ export function scanProject(options: ScanProjectOptions): ProjectHealthReport {
         coverage: coverageEntry?.lineCoverage,
         lineCoverage: coverageEntry?.lineCoverage,
         branchCoverage: coverageEntry?.branchCoverage,
+      },
+    };
+    const effectiveCoverage = calculateEffectiveCoverage(
+      fileWithCoverage,
+      options.config,
+    );
+
+    return {
+      ...fileWithCoverage,
+      changeCoupling: changeCoupling.byFile.get(file.path) ?? [],
+      metrics: {
+        ...fileWithCoverage.metrics,
+        crapScore: calculateCrapScore({
+          complexity: Math.max(
+            fileWithCoverage.metrics.cyclomaticComplexity,
+            fileWithCoverage.metrics.cognitiveComplexity,
+          ),
+          coveragePercent: effectiveCoverage,
+        }),
       },
     };
   });
@@ -112,6 +131,8 @@ export function scanProject(options: ScanProjectOptions): ProjectHealthReport {
   const recommendations = createRefactorRecommendations(
     scoredFiles,
     architecture,
+    packageStability,
+    options.config,
   );
   const summary = {
     ...calculateHealthSummary(scoredFiles, architecture, options.config),

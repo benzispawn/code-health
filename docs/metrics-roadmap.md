@@ -306,6 +306,15 @@ Mitigation:
 
 - allow grouping strategy or overrides through config in a later slice
 
+Deferred follow-ups:
+
+- allow package grouping overrides for repos that do not map cleanly to directories
+- decide whether package stability should affect recommendations only or eventually project score
+- defer abstractness and distance-from-main-sequence until package grouping is calibrated
+- decide whether package-scoped recommendations should get a dedicated report shape instead of reusing file-oriented recommendations
+- calibrate instability thresholds against real repositories before broader rollout
+- distinguish package-scoped recommendations visually in rendered reports
+
 ## Phase 5: CRAP-Style Risk Scoring
 
 Purpose:

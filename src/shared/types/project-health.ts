@@ -111,6 +111,7 @@ export interface FileMetrics {
   fanIn: number;
   fanOut: number;
   averageLcomHs?: number;
+  crapScore?: number;
   churn?: number;
   coverage?: number;
   lineCoverage?: number;

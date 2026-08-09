@@ -119,10 +119,10 @@ export function formatMarkdownReport(report: ProjectHealthReport): string {
     lines.push('- None');
   } else {
     lines.push(
-      '| File | Score | LOC | Logical LOC | Comments | Duplication | Fan-in | Fan-out | Depth | Exports | Endpoints | Coverage | Coupled Peers |',
+      '| File | Score | LOC | Logical LOC | Comments | Duplication | Fan-in | Fan-out | Depth | Exports | Endpoints | Coverage | CRAP | Coupled Peers |',
     );
     lines.push(
-      '| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |',
+      '| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |',
     );
     lines.push(
       ...report.files.slice(0, 30).map((file) => {
@@ -130,6 +130,8 @@ export function formatMarkdownReport(report: ProjectHealthReport): string {
           file.metrics.lineCoverage === undefined
             ? '-'
             : `${file.metrics.lineCoverage}%`;
+        const crapScore =
+          file.metrics.crapScore === undefined ? '-' : file.metrics.crapScore;
         const coupledPeers =
           file.changeCoupling.length === 0
             ? '-'
@@ -139,7 +141,7 @@ export function formatMarkdownReport(report: ProjectHealthReport): string {
                     `${peer.file} (${peer.sharedCommits}, ${peer.couplingPercent}%)`,
                 )
                 .join('<br>');
-        return `| ${file.path} | ${file.score} | ${file.metrics.physicalLoc} | ${file.metrics.logicalLoc} | ${file.metrics.commentRatio}% | ${file.metrics.duplicationPercent}% | ${file.metrics.fanIn} | ${file.metrics.fanOut} | ${file.metrics.dependencyDepth} | ${file.metrics.publicExportCount} | ${file.metrics.endpointCount} | ${coverage} | ${coupledPeers} |`;
+        return `| ${file.path} | ${file.score} | ${file.metrics.physicalLoc} | ${file.metrics.logicalLoc} | ${file.metrics.commentRatio}% | ${file.metrics.duplicationPercent}% | ${file.metrics.fanIn} | ${file.metrics.fanOut} | ${file.metrics.dependencyDepth} | ${file.metrics.publicExportCount} | ${file.metrics.endpointCount} | ${coverage} | ${crapScore} | ${coupledPeers} |`;
       }),
     );
   }

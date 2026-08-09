@@ -32,6 +32,7 @@ describe('MVP metrics integration', () => {
     );
     expect(controller?.metrics.lineCoverage).toBe(75);
     expect(controller?.metrics.branchCoverage).toBe(50);
+    expect(controller?.metrics.crapScore).toBeGreaterThan(0);
 
     expect(service?.metrics.duplicationPercent).toBeGreaterThan(0);
     expect(helper?.metrics.duplicationPercent).toBeGreaterThan(0);

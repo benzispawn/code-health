@@ -80,5 +80,13 @@ describe('API surface and package cycle metrics', () => {
         instability: 0,
       },
     ]);
+    expect(report.recommendations).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          file: 'src/app',
+          type: 'reduce-coupling',
+        }),
+      ]),
+    );
   });
 });

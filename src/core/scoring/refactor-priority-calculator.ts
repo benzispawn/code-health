@@ -1,13 +1,20 @@
 import type {
+  CodeHealthConfig,
+} from '../../shared/types/config';
+import type {
   ArchitectureAnalysis,
   FileAnalysis,
+  PackageStabilityAnalysis,
   RefactorRecommendation,
 } from '../../shared/types/project-health';
 import { priorityLabel } from '../git/hotspot-calculator';
+import { calculateEffectiveCoverage } from '../metrics/testability/effective-coverage.metric';
 
 export function createRefactorRecommendations(
   files: FileAnalysis[],
   architecture: ArchitectureAnalysis,
+  packageStability: PackageStabilityAnalysis[] = [],
+  config?: Pick<CodeHealthConfig, 'thresholds'>,
 ): RefactorRecommendation[] {
   const recommendations: RefactorRecommendation[] = [];
 
@@ -45,7 +52,10 @@ export function createRefactorRecommendations(
       });
     }
 
-    const effectiveCoverage = calculateEffectiveCoverage(file);
+    const effectiveCoverage =
+      config === undefined
+        ? file.metrics.lineCoverage
+        : calculateEffectiveCoverage(file, config);
     const complexity = Math.max(
       file.metrics.cyclomaticComplexity,
       file.metrics.cognitiveComplexity,
@@ -75,6 +85,19 @@ export function createRefactorRecommendations(
     });
   }
 
+  for (const pkg of packageStability) {
+    if (pkg.instability >= 0.8 && pkg.efferentCoupling >= 2) {
+      recommendations.push({
+        file: pkg.packagePath,
+        type: 'reduce-coupling',
+        priority: priorityLabel(
+          Math.min(100, Math.round(pkg.instability * 50) + pkg.efferentCoupling * 15),
+        ),
+        reason: `Package instability is ${pkg.instability} with Ce ${pkg.efferentCoupling} and Ca ${pkg.afferentCoupling}`,
+      });
+    }
+  }
+
   return recommendations.sort(
     (left, right) => priorityRank(right.priority) - priorityRank(left.priority),
   );
@@ -82,25 +105,4 @@ export function createRefactorRecommendations(
 
 function priorityRank(priority: RefactorRecommendation['priority']): number {
   return ['Low', 'Medium', 'High', 'Very High'].indexOf(priority);
-}
-
-function calculateEffectiveCoverage(file: FileAnalysis): number | undefined {
-  const lineCoverage = file.metrics.lineCoverage;
-  const branchCoverage = file.metrics.branchCoverage;
-
-  if (lineCoverage === undefined) {
-    return undefined;
-  }
-  if (branchCoverage === undefined) {
-    return lineCoverage;
-  }
-
-  const complexity = Math.max(
-    file.metrics.cyclomaticComplexity,
-    file.metrics.cognitiveComplexity,
-  );
-  const branchWeight = complexity >= 15 ? 0.6 : complexity >= 8 ? 0.4 : 0.2;
-  const lineWeight = 1 - branchWeight;
-
-  return Math.round(lineCoverage * lineWeight + branchCoverage * branchWeight);
 }
