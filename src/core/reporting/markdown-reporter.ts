@@ -117,6 +117,19 @@ export function formatMarkdownReport(report: ProjectHealthReport): string {
     );
   }
 
+  lines.push('', '## Unused Export Candidates', '');
+  if (report.unusedExports.length === 0) {
+    lines.push('- None');
+  } else {
+    lines.push('| File | Export | Kind | Reason |');
+    lines.push('| --- | --- | --- | --- |');
+    lines.push(
+      ...report.unusedExports.map((candidate) => {
+        return `| ${candidate.file} | ${candidate.exportName} | ${candidate.kind} | ${candidate.reason} |`;
+      }),
+    );
+  }
+
   lines.push('', '## File Metrics', '');
   if (report.files.length === 0) {
     lines.push('- None');

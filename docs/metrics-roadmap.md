@@ -364,6 +364,8 @@ Deferred follow-ups:
 - calibrate CRAP thresholds against real repositories before feeding the metric into hotspots or score
 - decide whether CRAP should stay file-level or later expand to function-level analysis
 - decide whether CRAP should be surfaced in terminal summary or remain report/detail data first
+- calibrate the CRAP hotspot multiplier against real repositories before treating it as stable
+- make hotspot output explain the CRAP contribution more explicitly if users need auditability
 
 ## Phase 6: Dead Code / Unused Export Analysis
 
@@ -411,6 +413,12 @@ Risks:
 Mitigation:
 
 - classify findings as candidates, not guaranteed dead code
+
+Deferred follow-ups:
+
+- support default exports and wildcard re-exports only after ambiguity rules are explicit
+- allow framework-specific ignore configuration instead of relying only on hardcoded conservative skips
+- decide whether unused-export candidates should surface in terminal output or remain report/recommendation data first
 
 ## Cross-Cutting Rules
 

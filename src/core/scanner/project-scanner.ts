@@ -6,6 +6,7 @@ import type {
 } from '../../shared/types/project-health';
 import { relativePosix } from '../../shared/fs/path-utils';
 import { validateArchitecture } from '../architecture/architecture-validator';
+import { analyzeUnusedExports } from '../dead-code/unused-exports';
 import { buildPackageDependencyGraph, calculateDependencyDepths } from '../architecture/dependency-graph';
 import {
   analyzeChangeCoupling,
@@ -127,11 +128,13 @@ export function scanProject(options: ScanProjectOptions): ProjectHealthReport {
   const packageStability = calculatePackageStability(
     buildPackageDependencyGraph(architecture.dependencyGraph),
   );
+  const unusedExports = analyzeUnusedExports(project, sourceFiles, options.cwd);
   const hotspots = calculateHotspots(scoredFiles, architecture);
   const recommendations = createRefactorRecommendations(
     scoredFiles,
     architecture,
     packageStability,
+    unusedExports,
     options.config,
   );
   const summary = {
@@ -152,6 +155,7 @@ export function scanProject(options: ScanProjectOptions): ProjectHealthReport {
     domains: calculateDomains(scoredFiles, architecture.violations),
     architecture,
     packageStability,
+    unusedExports,
     duplication: {
       percent: duplication.projectDuplicationPercent,
       groups: duplication.groups,

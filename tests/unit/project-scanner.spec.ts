@@ -89,4 +89,34 @@ describe('scanProject', () => {
     );
     expect(mixedFile?.metrics.averageLcomHs).toBe(1);
   });
+
+  it('reports conservative unused export candidates', () => {
+    const cwd = path.resolve(
+      process.cwd(),
+      'tests/fixtures/projects/unused-exports',
+    );
+    const report = scanProject({
+      cwd,
+      config: DEFAULT_CONFIG,
+      includeGit: false,
+    });
+
+    expect(report.unusedExports).toEqual([
+      {
+        file: 'src/services/unused.service.ts',
+        exportName: 'UnusedService',
+        kind: 'class',
+        reason: 'Named export has no internal named-import consumers',
+      },
+    ]);
+    expect(report.recommendations).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          file: 'src/services/unused.service.ts',
+          type: 'reduce-coupling',
+          reason: expect.stringContaining('Unused export candidate'),
+        }),
+      ]),
+    );
+  });
 });

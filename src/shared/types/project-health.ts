@@ -7,6 +7,7 @@ export interface ProjectHealthReport {
   domains: DomainAnalysis[];
   architecture: ArchitectureAnalysis;
   packageStability: PackageStabilityAnalysis[];
+  unusedExports: UnusedExportAnalysis[];
   duplication: DuplicationAnalysis;
   changeCoupling: ChangeCouplingAnalysis;
   hotspots: HotspotAnalysis[];
@@ -184,6 +185,13 @@ export interface CoupledFileAnalysis {
   file: string;
   sharedCommits: number;
   couplingPercent: number;
+}
+
+export interface UnusedExportAnalysis {
+  file: string;
+  exportName: string;
+  kind: 'class' | 'function' | 'const';
+  reason: string;
 }
 
 export interface DuplicationGroupAnalysis {

@@ -6,6 +6,7 @@ import type {
   FileAnalysis,
   PackageStabilityAnalysis,
   RefactorRecommendation,
+  UnusedExportAnalysis,
 } from '../../shared/types/project-health';
 import { priorityLabel } from '../git/hotspot-calculator';
 import { calculateEffectiveCoverage } from '../metrics/testability/effective-coverage.metric';
@@ -14,6 +15,7 @@ export function createRefactorRecommendations(
   files: FileAnalysis[],
   architecture: ArchitectureAnalysis,
   packageStability: PackageStabilityAnalysis[] = [],
+  unusedExports: UnusedExportAnalysis[] = [],
   config?: Pick<CodeHealthConfig, 'thresholds'>,
 ): RefactorRecommendation[] {
   const recommendations: RefactorRecommendation[] = [];
@@ -100,6 +102,15 @@ export function createRefactorRecommendations(
         reason: `Package instability is ${pkg.instability} with Ce ${pkg.efferentCoupling} and Ca ${pkg.afferentCoupling}`,
       });
     }
+  }
+
+  for (const unusedExport of unusedExports) {
+    recommendations.push({
+      file: unusedExport.file,
+      type: 'reduce-coupling',
+      priority: 'Low',
+      reason: `Unused export candidate: ${unusedExport.exportName} (${unusedExport.kind})`,
+    });
   }
 
   return recommendations.sort(
