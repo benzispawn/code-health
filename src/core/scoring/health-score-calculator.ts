@@ -44,9 +44,7 @@ export function calculateHealthSummary(
   );
   const architectureScore = architecture.score;
   const testabilityScore = average(
-    files.map((file) =>
-      file.metrics.lineCoverage === undefined ? 50 : file.metrics.lineCoverage,
-    ),
+    files.map((file) => calculateTestabilityScore(file, config)),
   );
   const lineCoverageValues = files
     .map((file) => file.metrics.lineCoverage)
@@ -180,4 +178,36 @@ function average(values: number[]): number {
     return 100;
   }
   return values.reduce((total, value) => total + value, 0) / values.length;
+}
+
+function calculateTestabilityScore(
+  file: FileAnalysis,
+  config: CodeHealthConfig,
+): number {
+  const lineCoverage = file.metrics.lineCoverage;
+  const branchCoverage = file.metrics.branchCoverage;
+
+  if (lineCoverage === undefined) {
+    return 50;
+  }
+  if (branchCoverage === undefined) {
+    return lineCoverage;
+  }
+
+  const complexity = Math.max(
+    file.metrics.cyclomaticComplexity,
+    file.metrics.cognitiveComplexity,
+  );
+  const complexityThreshold = Math.max(
+    config.thresholds.cyclomaticComplexity,
+    config.thresholds.cognitiveComplexity,
+  );
+  const complexityFactor = Math.min(
+    1,
+    complexity / Math.max(1, complexityThreshold * 2),
+  );
+  const branchWeight = 0.2 + complexityFactor * 0.4;
+  const lineWeight = 1 - branchWeight;
+
+  return Math.round(lineCoverage * lineWeight + branchCoverage * branchWeight);
 }

@@ -154,6 +154,12 @@ Mitigation:
 - treat tiny classes neutrally
 - calibrate using focused fixtures before scoring
 
+Deferred follow-ups:
+
+- support constructor parameter properties in cohesion extraction
+- detect more indirect field usage patterns beyond direct `this.field` access
+- calibrate DI-heavy thin adapters before cohesion affects score or recommendations
+
 ## Phase 2: Change Coupling
 
 Purpose:
@@ -199,6 +205,12 @@ Mitigation:
 
 - add minimum support thresholds
 - consider ignoring very large commits in later phases
+
+Deferred follow-ups:
+
+- filter merge commits more explicitly if repo history proves noisy
+- discount formatting-only or mechanically generated bulk commits
+- decide later whether change coupling should affect recommendations, hotspots, or only reports
 
 ## Phase 3: Stronger Testability Scoring
 
