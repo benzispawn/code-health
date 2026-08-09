@@ -6,14 +6,15 @@ import type {
 } from '../../shared/types/project-health';
 import { relativePosix } from '../../shared/fs/path-utils';
 import { validateArchitecture } from '../architecture/architecture-validator';
+import { buildPackageDependencyGraph, calculateDependencyDepths } from '../architecture/dependency-graph';
 import {
   analyzeChangeCoupling,
   readGitChangeSets,
 } from '../git/change-coupling';
-import { calculateDependencyDepths } from '../architecture/dependency-graph';
 import { readGitChurn } from '../git/churn-reader';
 import { calculateHotspots } from '../git/hotspot-calculator';
 import { applyFanIn } from '../metrics/coupling/fan-in.metric';
+import { calculatePackageStability } from '../metrics/coupling/package-stability.metric';
 import { readLcovCoverage } from '../metrics/coverage/lcov-reader';
 import { calculateDuplicationMetrics } from '../metrics/maintainability/duplication.metric';
 import {
@@ -104,6 +105,9 @@ export function scanProject(options: ScanProjectOptions): ProjectHealthReport {
   }));
   const scoredFiles = applyFileScores(filesWithDepth, options.config);
   const architecture = validateArchitecture(scoredFiles, options.config);
+  const packageStability = calculatePackageStability(
+    buildPackageDependencyGraph(architecture.dependencyGraph),
+  );
   const hotspots = calculateHotspots(scoredFiles, architecture);
   const recommendations = createRefactorRecommendations(
     scoredFiles,
@@ -126,6 +130,7 @@ export function scanProject(options: ScanProjectOptions): ProjectHealthReport {
     files: scoredFiles,
     domains: calculateDomains(scoredFiles, architecture.violations),
     architecture,
+    packageStability,
     duplication: {
       percent: duplication.projectDuplicationPercent,
       groups: duplication.groups,

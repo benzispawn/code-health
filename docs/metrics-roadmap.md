@@ -258,6 +258,7 @@ Deferred follow-ups:
 
 - calibrate the branch-weighting formula against real repositories before further score changes
 - decide whether effective coverage should be surfaced explicitly in reports
+- centralize effective coverage logic so scoring and recommendations do not drift
 - decide later whether stronger testability should affect hotspots in addition to recommendations
 
 ## Phase 4: Package Stability Metrics

@@ -3,6 +3,7 @@ import type {
   DependencyGraph,
   FileAnalysis,
 } from '../../shared/types/project-health';
+import { packagePathForFile } from '../metrics/coupling/package-stability.metric';
 
 export function buildDependencyGraph(files: FileAnalysis[]): DependencyGraph {
   const knownFiles = new Set(files.map((file) => file.path));
@@ -72,11 +73,7 @@ export function buildPackageDependencyGraph(
 }
 
 function packagePath(filePath: string): string {
-  const parts = filePath.split('/');
-  if (parts.length <= 2) {
-    return parts.slice(0, -1).join('/') || '.';
-  }
-  return parts.slice(0, -1).join('/');
+  return packagePathForFile(filePath);
 }
 
 export function calculateDependencyDepths(

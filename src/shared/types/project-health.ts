@@ -6,6 +6,7 @@ export interface ProjectHealthReport {
   files: FileAnalysis[];
   domains: DomainAnalysis[];
   architecture: ArchitectureAnalysis;
+  packageStability: PackageStabilityAnalysis[];
   duplication: DuplicationAnalysis;
   changeCoupling: ChangeCouplingAnalysis;
   hotspots: HotspotAnalysis[];
@@ -141,6 +142,13 @@ export interface ArchitectureViolation {
 
 export interface CircularDependency {
   files: string[];
+}
+
+export interface PackageStabilityAnalysis {
+  packagePath: string;
+  afferentCoupling: number;
+  efferentCoupling: number;
+  instability: number;
 }
 
 export interface DependencyGraph {

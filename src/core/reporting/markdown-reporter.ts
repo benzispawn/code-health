@@ -101,6 +101,19 @@ export function formatMarkdownReport(report: ProjectHealthReport): string {
     );
   }
 
+  lines.push('', '## Package Stability', '');
+  if (report.packageStability.length === 0) {
+    lines.push('- None');
+  } else {
+    lines.push('| Package | Ca | Ce | Instability |');
+    lines.push('| --- | ---: | ---: | ---: |');
+    lines.push(
+      ...report.packageStability.map((pkg) => {
+        return `| ${pkg.packagePath} | ${pkg.afferentCoupling} | ${pkg.efferentCoupling} | ${pkg.instability} |`;
+      }),
+    );
+  }
+
   lines.push('', '## File Metrics', '');
   if (report.files.length === 0) {
     lines.push('- None');
