@@ -40,6 +40,7 @@ export function calculateHotspots(
         complexityScore,
         churnScore,
         architectureRisk,
+        crapScore,
         refactorPriority,
         priority: priorityLabel(refactorPriority),
       };

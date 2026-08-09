@@ -30,6 +30,9 @@ export function formatMarkdownReport(report: ProjectHealthReport): string {
     ...(report.summary.averageBranchCoverage === undefined
       ? []
       : [`- Branch Coverage: ${report.summary.averageBranchCoverage}%`]),
+    ...(report.summary.maxCrapScore === undefined
+      ? []
+      : [`- Max CRAP: ${report.summary.maxCrapScore}`]),
     '',
     '## Critical Findings',
     '',
@@ -57,7 +60,7 @@ export function formatMarkdownReport(report: ProjectHealthReport): string {
         .slice(0, 10)
         .map(
           (hotspot, index) =>
-            `${index + 1}. ${hotspot.file} - ${hotspot.priority} (${hotspot.refactorPriority}/100)`,
+            `${index + 1}. ${hotspot.file} - ${hotspot.priority} (${hotspot.refactorPriority}/100, CRAP ${hotspot.crapScore})`,
         ),
     );
   }

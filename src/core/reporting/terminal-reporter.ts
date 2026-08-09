@@ -65,6 +65,7 @@ export function formatTerminalSummary(report: ProjectHealthReport): string[] {
     `- Package Cycles: ${report.summary.packageCycleCount} ${formatRating(ratePackageCycles(report.summary.packageCycleCount))}`,
     `- Line Coverage: ${formatPercent(report.summary.averageLineCoverage)} ${formatRating(rateCoverage(report.summary.averageLineCoverage))}`,
     `- Branch Coverage: ${formatPercent(report.summary.averageBranchCoverage)} ${formatRating(rateCoverage(report.summary.averageBranchCoverage))}`,
+    `- Max CRAP: ${formatCrap(report.summary.maxCrapScore)}`,
   );
 
   return lines;
@@ -72,4 +73,8 @@ export function formatTerminalSummary(report: ProjectHealthReport): string[] {
 
 function formatPercent(value: number | undefined): string {
   return value === undefined ? 'not found' : `${value}%`;
+}
+
+function formatCrap(value: number | undefined): string {
+  return value === undefined ? 'not found' : String(value);
 }

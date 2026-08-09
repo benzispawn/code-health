@@ -37,6 +37,7 @@ export interface HealthSummary {
   maxDependencyDepth: number;
   averageLineCoverage?: number;
   averageBranchCoverage?: number;
+  maxCrapScore?: number;
   apiSurfaceSize: number;
   publicExportCount: number;
   controllerCount: number;
@@ -204,6 +205,7 @@ export interface HotspotAnalysis {
   complexityScore: number;
   churnScore: number;
   architectureRisk: number;
+  crapScore: number;
   refactorPriority: number;
   priority: 'Low' | 'Medium' | 'High' | 'Very High';
 }

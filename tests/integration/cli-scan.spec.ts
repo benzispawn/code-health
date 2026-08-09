@@ -21,4 +21,14 @@ describe('code-health scan', () => {
     expect(output).toContain('- API Surface Size:');
     expect(output).toContain('- Line Coverage: not found');
   });
+
+  it('prints CRAP risk signals when coverage-based CRAP is available', async () => {
+    const cwd = path.resolve(
+      process.cwd(),
+      'tests/fixtures/projects/mvp-metrics',
+    );
+    const output = await runCliAndCapture(['scan', '--cwd', cwd]);
+
+    expect(output).toContain('- Max CRAP:');
+  });
 });

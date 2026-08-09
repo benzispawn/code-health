@@ -16,7 +16,7 @@ describe('code-health report', () => {
   it('writes markdown reports to the configured reports directory', async () => {
     const source = path.resolve(
       process.cwd(),
-      'tests/fixtures/projects/clean-valid',
+      'tests/fixtures/projects/mvp-metrics',
     );
     const cwd = fs.mkdtempSync(path.join(os.tmpdir(), 'code-health-report-'));
     tempRoots.push(cwd);
@@ -37,8 +37,9 @@ describe('code-health report', () => {
     expect(output).toContain(
       'created reports/code-health/code-health-report.md',
     );
-    expect(fs.readFileSync(reportPath, 'utf8')).toContain(
-      '# nestjs-project Code Health',
-    );
+    const markdown = fs.readFileSync(reportPath, 'utf8');
+    expect(markdown).toContain('# nestjs-project Code Health');
+    expect(markdown).toContain('- Max CRAP:');
+    expect(markdown).toContain('| File | Score | LOC | Logical LOC | Comments | Duplication | Fan-in | Fan-out | Depth | Exports | Endpoints | Coverage | CRAP | Coupled Peers |');
   });
 });
