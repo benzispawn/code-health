@@ -74,6 +74,15 @@ export interface ClassAnalysis {
   loc: number;
   methods: string[];
   methodCount: number;
+  instanceFields: string[];
+  cohesion?: ClassCohesionAnalysis;
+}
+
+export interface ClassCohesionAnalysis {
+  fieldCount: number;
+  methodCount: number;
+  methodFieldIntersections: number;
+  lcomHs?: number;
 }
 
 export interface ImportAnalysis {
@@ -98,6 +107,7 @@ export interface FileMetrics {
   endpointCount: number;
   fanIn: number;
   fanOut: number;
+  averageLcomHs?: number;
   churn?: number;
   coverage?: number;
   lineCoverage?: number;
