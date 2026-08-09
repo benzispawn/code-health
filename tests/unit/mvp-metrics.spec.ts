@@ -60,6 +60,7 @@ describe('MVP metrics integration', () => {
         expect.objectContaining({
           file: 'src/billing/billing.controller.ts',
           type: 'add-tests',
+          reason: expect.stringContaining('CRAP score'),
         }),
       ]),
     );

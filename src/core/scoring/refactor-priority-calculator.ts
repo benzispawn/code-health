@@ -65,13 +65,17 @@ export function createRefactorRecommendations(
       effectiveCoverage <= 70 &&
       complexity >= 2
     ) {
+      const crapContext =
+        file.metrics.crapScore === undefined
+          ? ''
+          : `; CRAP score is ${file.metrics.crapScore}`;
       recommendations.push({
         file: file.path,
         type: 'add-tests',
         priority: priorityLabel(
           Math.min(100, (70 - effectiveCoverage) * 2 + complexity * 5),
         ),
-        reason: `Effective coverage is ${effectiveCoverage}% for complexity ${complexity}`,
+        reason: `Effective coverage is ${effectiveCoverage}% for complexity ${complexity}${crapContext}`,
       });
     }
   }

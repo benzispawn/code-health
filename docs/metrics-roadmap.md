@@ -359,6 +359,12 @@ Mitigation:
 - document the formula explicitly
 - keep thresholds configurable if needed
 
+Deferred follow-ups:
+
+- calibrate CRAP thresholds against real repositories before feeding the metric into hotspots or score
+- decide whether CRAP should stay file-level or later expand to function-level analysis
+- decide whether CRAP should be surfaced in terminal summary or remain report/detail data first
+
 ## Phase 6: Dead Code / Unused Export Analysis
 
 Purpose:
