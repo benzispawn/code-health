@@ -6,6 +6,10 @@ import type {
 } from '../../shared/types/project-health';
 import { relativePosix } from '../../shared/fs/path-utils';
 import { validateArchitecture } from '../architecture/architecture-validator';
+import {
+  analyzeChangeCoupling,
+  readGitChangeSets,
+} from '../git/change-coupling';
 import { calculateDependencyDepths } from '../architecture/dependency-graph';
 import { readGitChurn } from '../git/churn-reader';
 import { calculateHotspots } from '../git/hotspot-calculator';
@@ -54,6 +58,9 @@ export function scanProject(options: ScanProjectOptions): ProjectHealthReport {
     options.includeGit === false
       ? new Map<string, number>()
       : readGitChurn(options.cwd);
+  const changeSets =
+    options.includeGit === false ? [] : readGitChangeSets(options.cwd);
+  const changeCoupling = analyzeChangeCoupling(changeSets);
   const coverage = readLcovCoverage(options.cwd);
   const duplication = calculateDuplicationMetrics(
     scannedFiles.map((file) => ({
@@ -69,6 +76,7 @@ export function scanProject(options: ScanProjectOptions): ProjectHealthReport {
 
     return {
       ...file,
+      changeCoupling: changeCoupling.byFile.get(file.path) ?? [],
       metrics: {
         ...file.metrics,
         churn: churn.get(file.path) ?? 0,
@@ -121,6 +129,11 @@ export function scanProject(options: ScanProjectOptions): ProjectHealthReport {
     duplication: {
       percent: duplication.projectDuplicationPercent,
       groups: duplication.groups,
+    },
+    changeCoupling: {
+      minSharedCommits: changeCoupling.minSharedCommits,
+      maxFilesPerCommit: changeCoupling.maxFilesPerCommit,
+      pairs: changeCoupling.pairs,
     },
     hotspots,
     recommendations,

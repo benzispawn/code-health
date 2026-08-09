@@ -100,6 +100,7 @@ export function scanFileWithTsMorph(
     functions,
     classes,
     imports,
+    changeCoupling: [],
     metrics: {
       maintainabilityIndex,
       cyclomaticComplexity,

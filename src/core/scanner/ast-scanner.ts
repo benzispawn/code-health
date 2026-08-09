@@ -64,6 +64,7 @@ export function scanFile(
     functions,
     classes,
     imports,
+    changeCoupling: [],
     metrics: {
       maintainabilityIndex,
       cyclomaticComplexity,

@@ -7,6 +7,7 @@ export interface ProjectHealthReport {
   domains: DomainAnalysis[];
   architecture: ArchitectureAnalysis;
   duplication: DuplicationAnalysis;
+  changeCoupling: ChangeCouplingAnalysis;
   hotspots: HotspotAnalysis[];
   recommendations: RefactorRecommendation[];
   generatedAt: string;
@@ -50,6 +51,7 @@ export interface FileAnalysis {
   functions: FunctionAnalysis[];
   classes: ClassAnalysis[];
   imports: ImportAnalysis[];
+  changeCoupling: CoupledFileAnalysis[];
   metrics: FileMetrics;
   score: number;
 }
@@ -154,6 +156,24 @@ export interface DependencyEdge {
 export interface DuplicationAnalysis {
   percent: number;
   groups: DuplicationGroupAnalysis[];
+}
+
+export interface ChangeCouplingAnalysis {
+  minSharedCommits: number;
+  maxFilesPerCommit: number;
+  pairs: ChangeCouplingPairAnalysis[];
+}
+
+export interface ChangeCouplingPairAnalysis {
+  files: [string, string];
+  sharedCommits: number;
+  couplingPercent: number;
+}
+
+export interface CoupledFileAnalysis {
+  file: string;
+  sharedCommits: number;
+  couplingPercent: number;
 }
 
 export interface DuplicationGroupAnalysis {
