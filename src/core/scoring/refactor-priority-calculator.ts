@@ -44,6 +44,26 @@ export function createRefactorRecommendations(
         reason: `Fan-out is ${file.metrics.fanOut}`,
       });
     }
+
+    const effectiveCoverage = calculateEffectiveCoverage(file);
+    const complexity = Math.max(
+      file.metrics.cyclomaticComplexity,
+      file.metrics.cognitiveComplexity,
+    );
+    if (
+      effectiveCoverage !== undefined &&
+      effectiveCoverage <= 70 &&
+      complexity >= 2
+    ) {
+      recommendations.push({
+        file: file.path,
+        type: 'add-tests',
+        priority: priorityLabel(
+          Math.min(100, (70 - effectiveCoverage) * 2 + complexity * 5),
+        ),
+        reason: `Effective coverage is ${effectiveCoverage}% for complexity ${complexity}`,
+      });
+    }
   }
 
   for (const violation of architecture.violations) {
@@ -62,4 +82,25 @@ export function createRefactorRecommendations(
 
 function priorityRank(priority: RefactorRecommendation['priority']): number {
   return ['Low', 'Medium', 'High', 'Very High'].indexOf(priority);
+}
+
+function calculateEffectiveCoverage(file: FileAnalysis): number | undefined {
+  const lineCoverage = file.metrics.lineCoverage;
+  const branchCoverage = file.metrics.branchCoverage;
+
+  if (lineCoverage === undefined) {
+    return undefined;
+  }
+  if (branchCoverage === undefined) {
+    return lineCoverage;
+  }
+
+  const complexity = Math.max(
+    file.metrics.cyclomaticComplexity,
+    file.metrics.cognitiveComplexity,
+  );
+  const branchWeight = complexity >= 15 ? 0.6 : complexity >= 8 ? 0.4 : 0.2;
+  const lineWeight = 1 - branchWeight;
+
+  return Math.round(lineCoverage * lineWeight + branchCoverage * branchWeight);
 }

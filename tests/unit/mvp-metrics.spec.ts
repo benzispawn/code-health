@@ -54,5 +54,13 @@ describe('MVP metrics integration', () => {
         }),
       ]),
     );
+    expect(report.recommendations).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          file: 'src/billing/billing.controller.ts',
+          type: 'add-tests',
+        }),
+      ]),
+    );
   });
 });

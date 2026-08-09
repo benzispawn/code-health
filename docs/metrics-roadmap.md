@@ -254,6 +254,12 @@ Mitigation:
 
 - fall back to line coverage without collapsing the whole score
 
+Deferred follow-ups:
+
+- calibrate the branch-weighting formula against real repositories before further score changes
+- decide whether effective coverage should be surfaced explicitly in reports
+- decide later whether stronger testability should affect hotspots in addition to recommendations
+
 ## Phase 4: Package Stability Metrics
 
 Purpose:
