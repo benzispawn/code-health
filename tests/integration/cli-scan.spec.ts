@@ -31,4 +31,17 @@ describe('code-health scan', () => {
 
     expect(output).toContain('- Max CRAP:');
   });
+
+  it('prints conservative unused export candidates when present', async () => {
+    const cwd = path.resolve(
+      process.cwd(),
+      'tests/fixtures/projects/unused-exports',
+    );
+    const output = await runCliAndCapture(['scan', '--cwd', cwd]);
+
+    expect(output).toContain('Unused Export Candidates:');
+    expect(output).toContain(
+      '- src/services/unused.service.ts: UnusedService (class)',
+    );
+  });
 });

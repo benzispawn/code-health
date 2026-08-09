@@ -419,6 +419,7 @@ Deferred follow-ups:
 - support default exports and wildcard re-exports only after ambiguity rules are explicit
 - allow framework-specific ignore configuration instead of relying only on hardcoded conservative skips
 - decide whether unused-export candidates should surface in terminal output or remain report/recommendation data first
+- decide later whether unused-export candidates should get a dedicated recommendation type instead of reusing reduce-coupling
 
 ## Cross-Cutting Rules
 
