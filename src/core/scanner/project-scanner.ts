@@ -126,7 +126,10 @@ export function scanProject(options: ScanProjectOptions): ProjectHealthReport {
   const scoredFiles = applyFileScores(filesWithDepth, options.config);
   const architecture = validateArchitecture(scoredFiles, options.config);
   const packageStability = calculatePackageStability(
-    buildPackageDependencyGraph(architecture.dependencyGraph),
+    buildPackageDependencyGraph(
+      architecture.dependencyGraph,
+      options.config.architecture.packageGroups,
+    ),
   );
   const unusedExports = analyzeUnusedExports(project, sourceFiles, options.cwd);
   const hotspots = calculateHotspots(scoredFiles, architecture);
@@ -143,6 +146,11 @@ export function scanProject(options: ScanProjectOptions): ProjectHealthReport {
   };
 
   return {
+    scan: {
+      root: options.cwd,
+      generatedAt: new Date().toISOString(),
+      scannedFileCount: scoredFiles.length,
+    },
     project: {
       name: options.config.project.name,
       framework: options.config.project.framework,

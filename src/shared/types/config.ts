@@ -24,6 +24,7 @@ export interface CodeHealthConfig {
   architecture: {
     layers: Record<string, string[]>;
     rules: ArchitectureRule[];
+    packageGroups?: Record<string, string[]>;
   };
   thresholds: HealthThresholds;
   scoring: ScoreWeights;
@@ -46,6 +47,8 @@ export interface HealthThresholds {
   duplicationPercent: number;
   fanOut: number;
   maintainabilityIndex: number;
+  packageInstabilityThreshold: number;
+  packageEfferentCouplingThreshold: number;
 }
 
 export interface ScoreWeights {

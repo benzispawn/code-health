@@ -249,10 +249,16 @@ function extractClasses(sourceFile: SourceFile): ClassAnalysis[] {
   return sourceFile.getClasses().map((classDeclaration) => {
     const lineStart = lineAt(sourceFile, classDeclaration.getStart());
     const lineEnd = lineAt(sourceFile, classDeclaration.getEnd());
-    const instanceFields = classDeclaration
+    const declaredFields = classDeclaration
       .getProperties()
       .filter((property) => !property.isStatic())
       .map((property) => property.getName());
+    const instanceFields = [
+      ...new Set([
+        ...declaredFields,
+        ...getParameterPropertyNames(classDeclaration),
+      ]),
+    ];
     const methods = classDeclaration
       .getMethods()
       .map((method) => method.getName());
@@ -279,7 +285,7 @@ function extractClassCohesion(
 ) {
   const methodFieldUsage = [
     ...classDeclaration.getConstructors().map((constructorDeclaration) =>
-      collectFieldUsage(constructorDeclaration, instanceFields),
+      collectConstructorFieldUsage(constructorDeclaration, instanceFields),
     ),
     ...classDeclaration
       .getMethods()
@@ -294,6 +300,38 @@ function extractClassCohesion(
     fieldNames: instanceFields,
     methodFieldUsage,
   });
+}
+
+function getParameterPropertyNames(
+  classDeclaration: ClassDeclaration,
+): string[] {
+  const constructorDeclaration = classDeclaration.getConstructors()[0];
+  if (!constructorDeclaration) {
+    return [];
+  }
+
+  return constructorDeclaration
+    .getParameters()
+    .filter((parameter) => parameter.getScope() !== undefined)
+    .map((parameter) => parameter.getName());
+}
+
+function collectConstructorFieldUsage(
+  constructorDeclaration: ConstructorDeclaration,
+  instanceFields: string[],
+): Set<string> {
+  const usedFields = collectFieldUsage(constructorDeclaration, instanceFields);
+
+  for (const parameter of constructorDeclaration.getParameters()) {
+    if (
+      parameter.getScope() !== undefined &&
+      instanceFields.includes(parameter.getName())
+    ) {
+      usedFields.add(parameter.getName());
+    }
+  }
+
+  return usedFields;
 }
 
 function collectFieldUsage(

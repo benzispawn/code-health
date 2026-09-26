@@ -90,6 +90,33 @@ describe('scanProject', () => {
     expect(mixedFile?.metrics.averageLcomHs).toBe(1);
   });
 
+  it('treats constructor parameter properties as instance fields for cohesion', () => {
+    const cwd = path.resolve(
+      process.cwd(),
+      'tests/fixtures/projects/cohesion-sample',
+    );
+    const report = scanProject({
+      cwd,
+      config: DEFAULT_CONFIG,
+      includeGit: false,
+    });
+    const diInjectedFile = report.files.find((file) =>
+      file.path.endsWith('di-injected.service.ts'),
+    );
+
+    expect(diInjectedFile?.classes[0]).toEqual(
+      expect.objectContaining({
+        instanceFields: ['plans', 'usage'],
+        cohesion: expect.objectContaining({
+          fieldCount: 2,
+          methodCount: 4,
+          lcomHs: 0,
+        }),
+      }),
+    );
+    expect(diInjectedFile?.metrics.averageLcomHs).toBe(0);
+  });
+
   it('reports conservative unused export candidates', () => {
     const cwd = path.resolve(
       process.cwd(),

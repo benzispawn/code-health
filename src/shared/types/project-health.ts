@@ -1,6 +1,7 @@
 import type { CodeHealthConfig } from './config';
 
 export interface ProjectHealthReport {
+  scan: ScanMetadata;
   project: ProjectInfo;
   summary: HealthSummary;
   files: FileAnalysis[];
@@ -14,6 +15,13 @@ export interface ProjectHealthReport {
   recommendations: RefactorRecommendation[];
   generatedAt: string;
   config: CodeHealthConfig;
+}
+
+export interface ScanMetadata {
+  root: string;
+  commit?: string;
+  generatedAt: string;
+  scannedFileCount: number;
 }
 
 export interface ProjectInfo {

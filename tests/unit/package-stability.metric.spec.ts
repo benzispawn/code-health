@@ -12,6 +12,22 @@ describe('packagePathForFile', () => {
     );
     expect(packagePathForFile('src/main.ts')).toBe('src');
   });
+
+  it('uses a configured group override when the file matches its patterns', () => {
+    expect(
+      packagePathForFile('src/domain/billing/billing.service.ts', {
+        'core-domain': ['src/domain/**'],
+      }),
+    ).toBe('core-domain');
+  });
+
+  it('falls back to directory-based grouping when no override matches', () => {
+    expect(
+      packagePathForFile('src/billing/billing.controller.ts', {
+        'core-domain': ['src/domain/**'],
+      }),
+    ).toBe('src/billing');
+  });
 });
 
 describe('calculatePackageStability', () => {

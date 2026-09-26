@@ -3,6 +3,22 @@ import { describe, expect, it } from 'vitest';
 import { runCliAndCapture } from './cli-helper';
 
 describe('code-health scan', () => {
+  it('scans a positional project root and reports scan provenance', async () => {
+    const cwd = path.resolve(
+      process.cwd(),
+      'tests/fixtures/projects/layered-invalid',
+    );
+    const output = await runCliAndCapture(['scan', cwd, '--json']);
+    const report = JSON.parse(output) as {
+      scan: { root: string; scannedFileCount: number };
+      project: { root: string };
+    };
+
+    expect(report.scan.root).toBe(cwd);
+    expect(report.project.root).toBe(cwd);
+    expect(report.scan.scannedFileCount).toBeGreaterThan(0);
+  });
+
   it('prints project score and architecture findings', async () => {
     const cwd = path.resolve(
       process.cwd(),

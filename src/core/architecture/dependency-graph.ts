@@ -49,13 +49,14 @@ export function findCircularDependencies(
 
 export function buildPackageDependencyGraph(
   graph: DependencyGraph,
+  groups?: Record<string, string[]>,
 ): DependencyGraph {
   const nodes = new Set<string>();
   const edgeKeys = new Set<string>();
 
   for (const edge of graph.edges) {
-    const from = packagePath(edge.from);
-    const to = packagePath(edge.to);
+    const from = packagePath(edge.from, groups);
+    const to = packagePath(edge.to, groups);
     nodes.add(from);
     nodes.add(to);
     if (from !== to) {
@@ -72,8 +73,11 @@ export function buildPackageDependencyGraph(
   };
 }
 
-function packagePath(filePath: string): string {
-  return packagePathForFile(filePath);
+function packagePath(
+  filePath: string,
+  groups?: Record<string, string[]>,
+): string {
+  return packagePathForFile(filePath, groups);
 }
 
 export function calculateDependencyDepths(

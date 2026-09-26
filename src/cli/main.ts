@@ -10,6 +10,7 @@ import { validateArchitectureCommand } from './commands/validate-architecture.co
 
 export interface ParsedArgs {
   command?: string;
+  positional: string[];
   flags: Record<string, string | boolean>;
 }
 
@@ -25,7 +26,7 @@ export async function runCli(argv: string[]): Promise<void> {
     return;
   }
   if (args.command === 'scan') {
-    await scanCommand(args.flags);
+    await scanCommand({ ...args.flags, cwd: args.positional[0] ?? args.flags.cwd });
     return;
   }
   if (args.command === 'score') {
@@ -63,9 +64,14 @@ export async function runCli(argv: string[]): Promise<void> {
 export function parseArgs(argv: string[]): ParsedArgs {
   const [command, ...rest] = argv;
   if (command?.startsWith('--')) {
-    return { flags: parseFlags(argv) };
+    return { positional: [], flags: parseFlags(argv) };
   }
-  return { command, flags: parseFlags(rest) };
+  return { command, positional: rest.filter((arg) => !arg.startsWith('--') && !isFlagValue(rest, arg)), flags: parseFlags(rest) };
+}
+
+function isFlagValue(args: string[], candidate: string): boolean {
+  const index = args.indexOf(candidate);
+  return index > 0 && args[index - 1].startsWith('--') && !args[index - 1].includes('=');
 }
 
 function parseFlags(args: string[]): Record<string, string | boolean> {

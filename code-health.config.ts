@@ -59,6 +59,8 @@ export default defineConfig({
     duplicationPercent: 5,
     fanOut: 12,
     maintainabilityIndex: 65,
+    packageInstabilityThreshold: 0.8,
+    packageEfferentCouplingThreshold: 2,
   },
 
   scoring: {

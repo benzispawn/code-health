@@ -2,6 +2,7 @@ import type {
   DependencyGraph,
   PackageStabilityAnalysis,
 } from '../../../shared/types/project-health';
+import { matchesPattern } from '../../scanner/file-scanner';
 
 export function calculatePackageStability(
   graph: DependencyGraph,
@@ -34,7 +35,18 @@ export function calculatePackageStability(
   });
 }
 
-export function packagePathForFile(filePath: string): string {
+export function packagePathForFile(
+  filePath: string,
+  groups?: Record<string, string[]>,
+): string {
+  if (groups) {
+    for (const [groupName, patterns] of Object.entries(groups)) {
+      if (patterns.some((pattern) => matchesPattern(filePath, pattern))) {
+        return groupName;
+      }
+    }
+  }
+
   const parts = filePath.split('/');
   if (parts.length <= 2) {
     return parts.slice(0, -1).join('/') || '.';

@@ -91,8 +91,16 @@ export function createRefactorRecommendations(
     });
   }
 
+  const packageInstabilityThreshold =
+    config?.thresholds.packageInstabilityThreshold ?? 0.8;
+  const packageEfferentCouplingThreshold =
+    config?.thresholds.packageEfferentCouplingThreshold ?? 2;
+
   for (const pkg of packageStability) {
-    if (pkg.instability >= 0.8 && pkg.efferentCoupling >= 2) {
+    if (
+      pkg.instability >= packageInstabilityThreshold &&
+      pkg.efferentCoupling >= packageEfferentCouplingThreshold
+    ) {
       recommendations.push({
         file: pkg.packagePath,
         type: 'reduce-coupling',
