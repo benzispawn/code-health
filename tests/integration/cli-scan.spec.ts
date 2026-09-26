@@ -3,6 +3,22 @@ import { describe, expect, it } from 'vitest';
 import { runCliAndCapture } from './cli-helper';
 
 describe('code-health scan', () => {
+  it('scans a positional project root and reports scan provenance', async () => {
+    const cwd = path.resolve(
+      process.cwd(),
+      'tests/fixtures/projects/layered-invalid',
+    );
+    const output = await runCliAndCapture(['scan', cwd, '--json']);
+    const report = JSON.parse(output) as {
+      scan: { root: string; scannedFileCount: number };
+      project: { root: string };
+    };
+
+    expect(report.scan.root).toBe(cwd);
+    expect(report.project.root).toBe(cwd);
+    expect(report.scan.scannedFileCount).toBeGreaterThan(0);
+  });
+
   it('prints project score and architecture findings', async () => {
     const cwd = path.resolve(
       process.cwd(),
@@ -20,5 +36,28 @@ describe('code-health scan', () => {
     expect(output).toContain('- Max Dependency Depth:');
     expect(output).toContain('- API Surface Size:');
     expect(output).toContain('- Line Coverage: not found');
+  });
+
+  it('prints CRAP risk signals when coverage-based CRAP is available', async () => {
+    const cwd = path.resolve(
+      process.cwd(),
+      'tests/fixtures/projects/mvp-metrics',
+    );
+    const output = await runCliAndCapture(['scan', '--cwd', cwd]);
+
+    expect(output).toContain('- Max CRAP:');
+  });
+
+  it('prints conservative unused export candidates when present', async () => {
+    const cwd = path.resolve(
+      process.cwd(),
+      'tests/fixtures/projects/unused-exports',
+    );
+    const output = await runCliAndCapture(['scan', '--cwd', cwd]);
+
+    expect(output).toContain('Unused Export Candidates:');
+    expect(output).toContain(
+      '- src/services/unused.service.ts: UnusedService (class)',
+    );
   });
 });

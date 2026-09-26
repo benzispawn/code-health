@@ -6,12 +6,23 @@ import type {
 } from '../../shared/types/project-health';
 import { relativePosix } from '../../shared/fs/path-utils';
 import { validateArchitecture } from '../architecture/architecture-validator';
-import { calculateDependencyDepths } from '../architecture/dependency-graph';
+import { analyzeUnusedExports } from '../dead-code/unused-exports';
+import {
+  buildPackageDependencyGraph,
+  calculateDependencyDepths,
+} from '../architecture/dependency-graph';
+import {
+  analyzeChangeCoupling,
+  readGitChangeSets,
+} from '../git/change-coupling';
 import { readGitChurn } from '../git/churn-reader';
 import { calculateHotspots } from '../git/hotspot-calculator';
 import { applyFanIn } from '../metrics/coupling/fan-in.metric';
+import { calculatePackageStability } from '../metrics/coupling/package-stability.metric';
 import { readLcovCoverage } from '../metrics/coverage/lcov-reader';
 import { calculateDuplicationMetrics } from '../metrics/maintainability/duplication.metric';
+import { calculateCrapScore } from '../metrics/testability/crap-score.metric';
+import { calculateEffectiveCoverage } from '../metrics/testability/effective-coverage.metric';
 import {
   applyFileScores,
   calculateHealthSummary,
@@ -54,6 +65,9 @@ export function scanProject(options: ScanProjectOptions): ProjectHealthReport {
     options.includeGit === false
       ? new Map<string, number>()
       : readGitChurn(options.cwd);
+  const changeSets =
+    options.includeGit === false ? [] : readGitChangeSets(options.cwd);
+  const changeCoupling = analyzeChangeCoupling(changeSets);
   const coverage = readLcovCoverage(options.cwd);
   const duplication = calculateDuplicationMetrics(
     scannedFiles.map((file) => ({
@@ -66,8 +80,7 @@ export function scanProject(options: ScanProjectOptions): ProjectHealthReport {
   );
   const filesWithSignals = applyFanIn(scannedFiles).map((file) => {
     const coverageEntry = coverage.get(file.path);
-
-    return {
+    const fileWithCoverage = {
       ...file,
       metrics: {
         ...file.metrics,
@@ -77,6 +90,25 @@ export function scanProject(options: ScanProjectOptions): ProjectHealthReport {
         coverage: coverageEntry?.lineCoverage,
         lineCoverage: coverageEntry?.lineCoverage,
         branchCoverage: coverageEntry?.branchCoverage,
+      },
+    };
+    const effectiveCoverage = calculateEffectiveCoverage(
+      fileWithCoverage,
+      options.config,
+    );
+
+    return {
+      ...fileWithCoverage,
+      changeCoupling: changeCoupling.byFile.get(file.path) ?? [],
+      metrics: {
+        ...fileWithCoverage.metrics,
+        crapScore: calculateCrapScore({
+          complexity: Math.max(
+            fileWithCoverage.metrics.cyclomaticComplexity,
+            fileWithCoverage.metrics.cognitiveComplexity,
+          ),
+          coveragePercent: effectiveCoverage,
+        }),
       },
     };
   });
@@ -96,10 +128,20 @@ export function scanProject(options: ScanProjectOptions): ProjectHealthReport {
   }));
   const scoredFiles = applyFileScores(filesWithDepth, options.config);
   const architecture = validateArchitecture(scoredFiles, options.config);
+  const packageStability = calculatePackageStability(
+    buildPackageDependencyGraph(
+      architecture.dependencyGraph,
+      options.config.architecture.packageGroups,
+    ),
+  );
+  const unusedExports = analyzeUnusedExports(project, sourceFiles, options.cwd);
   const hotspots = calculateHotspots(scoredFiles, architecture);
   const recommendations = createRefactorRecommendations(
     scoredFiles,
     architecture,
+    packageStability,
+    unusedExports,
+    options.config,
   );
   const summary = {
     ...calculateHealthSummary(scoredFiles, architecture, options.config),
@@ -107,6 +149,11 @@ export function scanProject(options: ScanProjectOptions): ProjectHealthReport {
   };
 
   return {
+    scan: {
+      root: options.cwd,
+      generatedAt: new Date().toISOString(),
+      scannedFileCount: scoredFiles.length,
+    },
     project: {
       name: options.config.project.name,
       framework: options.config.project.framework,
@@ -118,9 +165,16 @@ export function scanProject(options: ScanProjectOptions): ProjectHealthReport {
     files: scoredFiles,
     domains: calculateDomains(scoredFiles, architecture.violations),
     architecture,
+    packageStability,
+    unusedExports,
     duplication: {
       percent: duplication.projectDuplicationPercent,
       groups: duplication.groups,
+    },
+    changeCoupling: {
+      minSharedCommits: changeCoupling.minSharedCommits,
+      maxFilesPerCommit: changeCoupling.maxFilesPerCommit,
+      pairs: changeCoupling.pairs,
     },
     hotspots,
     recommendations,

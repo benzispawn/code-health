@@ -30,6 +30,9 @@ export function formatMarkdownReport(report: ProjectHealthReport): string {
     ...(report.summary.averageBranchCoverage === undefined
       ? []
       : [`- Branch Coverage: ${report.summary.averageBranchCoverage}%`]),
+    ...(report.summary.maxCrapScore === undefined
+      ? []
+      : [`- Max CRAP: ${report.summary.maxCrapScore}`]),
     '',
     '## Critical Findings',
     '',
@@ -57,7 +60,7 @@ export function formatMarkdownReport(report: ProjectHealthReport): string {
         .slice(0, 10)
         .map(
           (hotspot, index) =>
-            `${index + 1}. ${hotspot.file} - ${hotspot.priority} (${hotspot.refactorPriority}/100)`,
+            `${index + 1}. ${hotspot.file} - ${hotspot.priority} (${hotspot.refactorPriority}/100, CRAP ${hotspot.crapScore})`,
         ),
     );
   }
@@ -87,15 +90,55 @@ export function formatMarkdownReport(report: ProjectHealthReport): string {
     );
   }
 
+  lines.push('', '## Change Coupling', '');
+  if (report.changeCoupling.pairs.length === 0) {
+    lines.push('- None');
+  } else {
+    lines.push('| Files | Shared Commits | Coupling |');
+    lines.push('| --- | ---: | ---: |');
+    lines.push(
+      ...report.changeCoupling.pairs.slice(0, 20).map((pair) => {
+        const files = `${pair.files[0]} <-> ${pair.files[1]}`;
+        return `| ${files} | ${pair.sharedCommits} | ${pair.couplingPercent}% |`;
+      }),
+    );
+  }
+
+  lines.push('', '## Package Stability', '');
+  if (report.packageStability.length === 0) {
+    lines.push('- None');
+  } else {
+    lines.push('| Package | Ca | Ce | Instability |');
+    lines.push('| --- | ---: | ---: | ---: |');
+    lines.push(
+      ...report.packageStability.map((pkg) => {
+        return `| ${pkg.packagePath} | ${pkg.afferentCoupling} | ${pkg.efferentCoupling} | ${pkg.instability} |`;
+      }),
+    );
+  }
+
+  lines.push('', '## Unused Export Candidates', '');
+  if (report.unusedExports.length === 0) {
+    lines.push('- None');
+  } else {
+    lines.push('| File | Export | Kind | Reason |');
+    lines.push('| --- | --- | --- | --- |');
+    lines.push(
+      ...report.unusedExports.map((candidate) => {
+        return `| ${candidate.file} | ${candidate.exportName} | ${candidate.kind} | ${candidate.reason} |`;
+      }),
+    );
+  }
+
   lines.push('', '## File Metrics', '');
   if (report.files.length === 0) {
     lines.push('- None');
   } else {
     lines.push(
-      '| File | Score | LOC | Logical LOC | Comments | Duplication | Fan-in | Fan-out | Depth | Exports | Endpoints | Coverage |',
+      '| File | Score | LOC | Logical LOC | Comments | Duplication | Fan-in | Fan-out | Depth | Exports | Endpoints | Coverage | CRAP | Coupled Peers |',
     );
     lines.push(
-      '| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
+      '| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |',
     );
     lines.push(
       ...report.files.slice(0, 30).map((file) => {
@@ -103,7 +146,18 @@ export function formatMarkdownReport(report: ProjectHealthReport): string {
           file.metrics.lineCoverage === undefined
             ? '-'
             : `${file.metrics.lineCoverage}%`;
-        return `| ${file.path} | ${file.score} | ${file.metrics.physicalLoc} | ${file.metrics.logicalLoc} | ${file.metrics.commentRatio}% | ${file.metrics.duplicationPercent}% | ${file.metrics.fanIn} | ${file.metrics.fanOut} | ${file.metrics.dependencyDepth} | ${file.metrics.publicExportCount} | ${file.metrics.endpointCount} | ${coverage} |`;
+        const crapScore =
+          file.metrics.crapScore === undefined ? '-' : file.metrics.crapScore;
+        const coupledPeers =
+          file.changeCoupling.length === 0
+            ? '-'
+            : file.changeCoupling
+                .map(
+                  (peer) =>
+                    `${peer.file} (${peer.sharedCommits}, ${peer.couplingPercent}%)`,
+                )
+                .join('<br>');
+        return `| ${file.path} | ${file.score} | ${file.metrics.physicalLoc} | ${file.metrics.logicalLoc} | ${file.metrics.commentRatio}% | ${file.metrics.duplicationPercent}% | ${file.metrics.fanIn} | ${file.metrics.fanOut} | ${file.metrics.dependencyDepth} | ${file.metrics.publicExportCount} | ${file.metrics.endpointCount} | ${coverage} | ${crapScore} | ${coupledPeers} |`;
       }),
     );
   }

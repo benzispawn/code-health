@@ -32,6 +32,7 @@ describe('MVP metrics integration', () => {
     );
     expect(controller?.metrics.lineCoverage).toBe(75);
     expect(controller?.metrics.branchCoverage).toBe(50);
+    expect(controller?.metrics.crapScore).toBeGreaterThan(0);
 
     expect(service?.metrics.duplicationPercent).toBeGreaterThan(0);
     expect(helper?.metrics.duplicationPercent).toBeGreaterThan(0);
@@ -51,6 +52,15 @@ describe('MVP metrics integration', () => {
             expect.objectContaining({ file: 'src/billing/billing.helper.ts' }),
             expect.objectContaining({ file: 'src/billing/billing.service.ts' }),
           ]),
+        }),
+      ]),
+    );
+    expect(report.recommendations).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          file: 'src/billing/billing.controller.ts',
+          type: 'add-tests',
+          reason: expect.stringContaining('CRAP score'),
         }),
       ]),
     );

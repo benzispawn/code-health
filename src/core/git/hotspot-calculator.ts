@@ -27,8 +27,12 @@ export function calculateHotspots(
       )
         ? 100
         : 20;
+      const crapScore = Math.min(100, file.metrics.crapScore ?? 0);
       const refactorPriority = Math.round(
-        (complexityScore / 100) * (churnScore / 100) * 100,
+        (complexityScore / 100) *
+          (churnScore / 100) *
+          (1 + crapScore / 100) *
+          100,
       );
 
       return {
@@ -36,6 +40,7 @@ export function calculateHotspots(
         complexityScore,
         churnScore,
         architectureRisk,
+        crapScore,
         refactorPriority,
         priority: priorityLabel(refactorPriority),
       };

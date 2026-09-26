@@ -1,6 +1,7 @@
 import path from 'node:path';
 import type {
   ArrowFunction,
+  ClassDeclaration,
   CallExpression,
   ConstructorDeclaration,
   FunctionDeclaration,
@@ -25,6 +26,7 @@ import { detectLayer } from '../architecture/layer-rules';
 import { calculateCyclomaticComplexity } from '../metrics/complexity/cyclomatic.metric';
 import { calculateCognitiveComplexity } from '../metrics/complexity/cognitive.metric';
 import { estimateNPathComplexity } from '../metrics/complexity/npath.metric';
+import { calculateLcomHs } from '../metrics/design/lcom-hs.metric';
 import { calculateMaintainabilityIndex } from '../metrics/maintainability/maintainability-index.metric';
 import { calculateFanOut } from '../metrics/coupling/fan-out.metric';
 import { getRequiredSourceFile } from './ts-morph-project';
@@ -81,6 +83,9 @@ export function scanFileWithTsMorph(
   const npathComplexity = sum(
     functions.map((item) => item.npathComplexity ?? 0),
   );
+  const lcomHsValues = classes
+    .map((item) => item.cohesion?.lcomHs)
+    .filter((value): value is number => value !== undefined);
   const maintainabilityIndex = calculateMaintainabilityIndex({
     loc,
     cyclomaticComplexity,
@@ -95,6 +100,7 @@ export function scanFileWithTsMorph(
     functions,
     classes,
     imports,
+    changeCoupling: [],
     metrics: {
       maintainabilityIndex,
       cyclomaticComplexity,
@@ -112,6 +118,8 @@ export function scanFileWithTsMorph(
       endpointCount,
       fanIn: 0,
       fanOut: calculateFanOut(imports),
+      averageLcomHs:
+        lcomHsValues.length === 0 ? undefined : average(lcomHsValues),
     },
     score: 100,
   };
@@ -241,6 +249,16 @@ function extractClasses(sourceFile: SourceFile): ClassAnalysis[] {
   return sourceFile.getClasses().map((classDeclaration) => {
     const lineStart = lineAt(sourceFile, classDeclaration.getStart());
     const lineEnd = lineAt(sourceFile, classDeclaration.getEnd());
+    const declaredFields = classDeclaration
+      .getProperties()
+      .filter((property) => !property.isStatic())
+      .map((property) => property.getName());
+    const instanceFields = [
+      ...new Set([
+        ...declaredFields,
+        ...getParameterPropertyNames(classDeclaration),
+      ]),
+    ];
     const methods = classDeclaration
       .getMethods()
       .map((method) => method.getName());
@@ -255,8 +273,89 @@ function extractClasses(sourceFile: SourceFile): ClassAnalysis[] {
       loc: Math.max(1, lineEnd - lineStart + 1),
       methods,
       methodCount: methods.length,
+      instanceFields,
+      cohesion: extractClassCohesion(classDeclaration, instanceFields),
     };
   });
+}
+
+function extractClassCohesion(
+  classDeclaration: ClassDeclaration,
+  instanceFields: string[],
+) {
+  const methodFieldUsage = [
+    ...classDeclaration
+      .getConstructors()
+      .map((constructorDeclaration) =>
+        collectConstructorFieldUsage(constructorDeclaration, instanceFields),
+      ),
+    ...classDeclaration
+      .getMethods()
+      .map((method) => collectFieldUsage(method, instanceFields)),
+  ];
+
+  if (methodFieldUsage.length === 0 && instanceFields.length === 0) {
+    return undefined;
+  }
+
+  return calculateLcomHs({
+    fieldNames: instanceFields,
+    methodFieldUsage,
+  });
+}
+
+function getParameterPropertyNames(
+  classDeclaration: ClassDeclaration,
+): string[] {
+  const constructorDeclaration = classDeclaration.getConstructors()[0];
+  if (!constructorDeclaration) {
+    return [];
+  }
+
+  return constructorDeclaration
+    .getParameters()
+    .filter((parameter) => parameter.getScope() !== undefined)
+    .map((parameter) => parameter.getName());
+}
+
+function collectConstructorFieldUsage(
+  constructorDeclaration: ConstructorDeclaration,
+  instanceFields: string[],
+): Set<string> {
+  const usedFields = collectFieldUsage(constructorDeclaration, instanceFields);
+
+  for (const parameter of constructorDeclaration.getParameters()) {
+    if (
+      parameter.getScope() !== undefined &&
+      instanceFields.includes(parameter.getName())
+    ) {
+      usedFields.add(parameter.getName());
+    }
+  }
+
+  return usedFields;
+}
+
+function collectFieldUsage(
+  node: MethodDeclaration | ConstructorDeclaration,
+  instanceFields: string[],
+): Set<string> {
+  const fields = new Set(instanceFields);
+  const usedFields = new Set<string>();
+
+  for (const expression of node.getDescendantsOfKind(
+    SyntaxKind.PropertyAccessExpression,
+  )) {
+    if (expression.getExpression().getKind() !== SyntaxKind.ThisKeyword) {
+      continue;
+    }
+    const fieldName = expression.getName();
+    if (fields.has(fieldName)) {
+      usedFields.add(fieldName);
+    }
+  }
+
+  return usedFields;
 }
 
 function extractFunctions(sourceFile: SourceFile): FunctionAnalysis[] {
@@ -442,4 +541,8 @@ function countCommentLines(source: string): number {
 
 function sum(values: number[]): number {
   return values.reduce((total, value) => total + value, 0);
+}
+
+function average(values: number[]): number {
+  return values.reduce((total, value) => total + value, 0) / values.length;
 }

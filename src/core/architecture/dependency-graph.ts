@@ -3,6 +3,7 @@ import type {
   DependencyGraph,
   FileAnalysis,
 } from '../../shared/types/project-health';
+import { packagePathForFile } from '../metrics/coupling/package-stability.metric';
 
 export function buildDependencyGraph(files: FileAnalysis[]): DependencyGraph {
   const knownFiles = new Set(files.map((file) => file.path));
@@ -48,13 +49,14 @@ export function findCircularDependencies(
 
 export function buildPackageDependencyGraph(
   graph: DependencyGraph,
+  groups?: Record<string, string[]>,
 ): DependencyGraph {
   const nodes = new Set<string>();
   const edgeKeys = new Set<string>();
 
   for (const edge of graph.edges) {
-    const from = packagePath(edge.from);
-    const to = packagePath(edge.to);
+    const from = packagePath(edge.from, groups);
+    const to = packagePath(edge.to, groups);
     nodes.add(from);
     nodes.add(to);
     if (from !== to) {
@@ -71,12 +73,11 @@ export function buildPackageDependencyGraph(
   };
 }
 
-function packagePath(filePath: string): string {
-  const parts = filePath.split('/');
-  if (parts.length <= 2) {
-    return parts.slice(0, -1).join('/') || '.';
-  }
-  return parts.slice(0, -1).join('/');
+function packagePath(
+  filePath: string,
+  groups?: Record<string, string[]>,
+): string {
+  return packagePathForFile(filePath, groups);
 }
 
 export function calculateDependencyDepths(

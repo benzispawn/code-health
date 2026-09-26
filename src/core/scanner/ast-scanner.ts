@@ -64,6 +64,7 @@ export function scanFile(
     functions,
     classes,
     imports,
+    changeCoupling: [],
     metrics: {
       maintainabilityIndex,
       cyclomaticComplexity,
@@ -83,6 +84,7 @@ export function scanFile(
       endpointCount: countEndpointDecorators(source),
       fanIn: 0,
       fanOut: calculateFanOut(imports),
+      averageLcomHs: undefined,
     },
     score: 100,
   };
@@ -254,6 +256,8 @@ function extractClasses(source: string): ClassAnalysis[] {
       loc: Math.max(1, lineEnd - lineStart + 1),
       methods,
       methodCount: methods.length,
+      instanceFields: [],
+      cohesion: undefined,
     });
 
     match = pattern.exec(source);

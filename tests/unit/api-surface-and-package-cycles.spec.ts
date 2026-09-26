@@ -48,4 +48,45 @@ describe('API surface and package cycle metrics', () => {
       ]),
     );
   });
+
+  it('computes package stability metrics for stable and unstable packages', () => {
+    const cwd = path.resolve(
+      process.cwd(),
+      'tests/fixtures/projects/package-stability',
+    );
+    const report = scanProject({
+      cwd,
+      config: DEFAULT_CONFIG,
+      includeGit: false,
+    });
+
+    expect(report.packageStability).toEqual([
+      {
+        packagePath: 'src/app',
+        afferentCoupling: 0,
+        efferentCoupling: 2,
+        instability: 1,
+      },
+      {
+        packagePath: 'src/domain',
+        afferentCoupling: 1,
+        efferentCoupling: 1,
+        instability: 0.5,
+      },
+      {
+        packagePath: 'src/shared',
+        afferentCoupling: 2,
+        efferentCoupling: 0,
+        instability: 0,
+      },
+    ]);
+    expect(report.recommendations).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          file: 'src/app',
+          type: 'reduce-coupling',
+        }),
+      ]),
+    );
+  });
 });

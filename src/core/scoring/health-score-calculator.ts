@@ -4,6 +4,7 @@ import type {
   FileAnalysis,
   HealthSummary,
 } from '../../shared/types/project-health';
+import { calculateEffectiveCoverage } from '../metrics/testability/effective-coverage.metric';
 
 export function applyFileScores(
   files: FileAnalysis[],
@@ -44,9 +45,7 @@ export function calculateHealthSummary(
   );
   const architectureScore = architecture.score;
   const testabilityScore = average(
-    files.map((file) =>
-      file.metrics.lineCoverage === undefined ? 50 : file.metrics.lineCoverage,
-    ),
+    files.map((file) => calculateTestabilityScore(file, config)),
   );
   const lineCoverageValues = files
     .map((file) => file.metrics.lineCoverage)
@@ -54,6 +53,9 @@ export function calculateHealthSummary(
   const branchCoverageValues = files
     .map((file) => file.metrics.branchCoverage)
     .filter((coverage): coverage is number => coverage !== undefined);
+  const crapScores = files
+    .map((file) => file.metrics.crapScore)
+    .filter((score): score is number => score !== undefined);
   const weights = config.scoring;
   const score = Math.round(
     complexityScore * weights.complexityWeight +
@@ -93,6 +95,7 @@ export function calculateHealthSummary(
       branchCoverageValues.length === 0
         ? undefined
         : Math.round(average(branchCoverageValues)),
+    maxCrapScore: crapScores.length === 0 ? undefined : Math.max(...crapScores),
     apiSurfaceSize: files.reduce(
       (total, file) =>
         total +
@@ -180,4 +183,15 @@ function average(values: number[]): number {
     return 100;
   }
   return values.reduce((total, value) => total + value, 0) / values.length;
+}
+
+function calculateTestabilityScore(
+  file: FileAnalysis,
+  config: CodeHealthConfig,
+): number {
+  const effectiveCoverage = calculateEffectiveCoverage(file, config);
+  if (effectiveCoverage === undefined) {
+    return 50;
+  }
+  return effectiveCoverage;
 }

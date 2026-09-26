@@ -33,6 +33,8 @@ npm i -D @rbenzi/code-health
 ```bash
 code-health init
 code-health scan
+code-health scan /path/to/project
+code-health scan --cwd /path/to/project
 code-health scan --domain billing
 code-health scan --duplication
 code-health score
@@ -47,18 +49,20 @@ code-health compare-spec --fail
 code-health suggest-refactor
 ```
 
+Scans report their resolved project root and scanned file count in the JSON `scan` section. Positional project roots and `--cwd` are equivalent.
+
 ## How To Read The Score
 
 Code Health uses a 0-100 score. Treat it as a prioritization signal, not a perfect judgment.
 
-| Score | Meaning | Action |
-| --- | --- | --- |
-| 90-100 | Excellent | Keep current standards; watch new violations |
-| 80-89 | Good | Minor cleanup only |
-| 70-79 | Acceptable | Review hotspots before adding major features |
-| 60-69 | Needs attention | Plan targeted refactors |
-| 40-59 | Risky | Fix architecture, complexity, or test gaps soon |
-| 0-39 | Critical | Avoid expanding this area before remediation |
+| Score  | Meaning         | Action                                          |
+| ------ | --------------- | ----------------------------------------------- |
+| 90-100 | Excellent       | Keep current standards; watch new violations    |
+| 80-89  | Good            | Minor cleanup only                              |
+| 70-79  | Acceptable      | Review hotspots before adding major features    |
+| 60-69  | Needs attention | Plan targeted refactors                         |
+| 40-59  | Risky           | Fix architecture, complexity, or test gaps soon |
+| 0-39   | Critical        | Avoid expanding this area before remediation    |
 
 The project score is weighted from complexity, maintainability, coupling, architecture, and testability. See [Scoring Guide](docs/scoring.md) for the full explanation.
 
@@ -82,7 +86,13 @@ export default defineConfig({
   },
   scan: {
     include: ['src/**/*.ts'],
-    exclude: ['**/*.spec.ts', '**/*.test.ts', '**/*.module.ts', '**/node_modules/**', '**/dist/**'],
+    exclude: [
+      '**/*.spec.ts',
+      '**/*.test.ts',
+      '**/*.module.ts',
+      '**/node_modules/**',
+      '**/dist/**',
+    ],
   },
   architecture: {
     layers: {

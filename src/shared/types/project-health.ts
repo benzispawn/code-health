@@ -1,16 +1,27 @@
 import type { CodeHealthConfig } from './config';
 
 export interface ProjectHealthReport {
+  scan: ScanMetadata;
   project: ProjectInfo;
   summary: HealthSummary;
   files: FileAnalysis[];
   domains: DomainAnalysis[];
   architecture: ArchitectureAnalysis;
+  packageStability: PackageStabilityAnalysis[];
+  unusedExports: UnusedExportAnalysis[];
   duplication: DuplicationAnalysis;
+  changeCoupling: ChangeCouplingAnalysis;
   hotspots: HotspotAnalysis[];
   recommendations: RefactorRecommendation[];
   generatedAt: string;
   config: CodeHealthConfig;
+}
+
+export interface ScanMetadata {
+  root: string;
+  commit?: string;
+  generatedAt: string;
+  scannedFileCount: number;
 }
 
 export interface ProjectInfo {
@@ -35,6 +46,7 @@ export interface HealthSummary {
   maxDependencyDepth: number;
   averageLineCoverage?: number;
   averageBranchCoverage?: number;
+  maxCrapScore?: number;
   apiSurfaceSize: number;
   publicExportCount: number;
   controllerCount: number;
@@ -50,6 +62,7 @@ export interface FileAnalysis {
   functions: FunctionAnalysis[];
   classes: ClassAnalysis[];
   imports: ImportAnalysis[];
+  changeCoupling: CoupledFileAnalysis[];
   metrics: FileMetrics;
   score: number;
 }
@@ -74,6 +87,15 @@ export interface ClassAnalysis {
   loc: number;
   methods: string[];
   methodCount: number;
+  instanceFields: string[];
+  cohesion?: ClassCohesionAnalysis;
+}
+
+export interface ClassCohesionAnalysis {
+  fieldCount: number;
+  methodCount: number;
+  methodFieldIntersections: number;
+  lcomHs?: number;
 }
 
 export interface ImportAnalysis {
@@ -98,6 +120,8 @@ export interface FileMetrics {
   endpointCount: number;
   fanIn: number;
   fanOut: number;
+  averageLcomHs?: number;
+  crapScore?: number;
   churn?: number;
   coverage?: number;
   lineCoverage?: number;
@@ -131,6 +155,13 @@ export interface CircularDependency {
   files: string[];
 }
 
+export interface PackageStabilityAnalysis {
+  packagePath: string;
+  afferentCoupling: number;
+  efferentCoupling: number;
+  instability: number;
+}
+
 export interface DependencyGraph {
   nodes: string[];
   edges: DependencyEdge[];
@@ -144,6 +175,31 @@ export interface DependencyEdge {
 export interface DuplicationAnalysis {
   percent: number;
   groups: DuplicationGroupAnalysis[];
+}
+
+export interface ChangeCouplingAnalysis {
+  minSharedCommits: number;
+  maxFilesPerCommit: number;
+  pairs: ChangeCouplingPairAnalysis[];
+}
+
+export interface ChangeCouplingPairAnalysis {
+  files: [string, string];
+  sharedCommits: number;
+  couplingPercent: number;
+}
+
+export interface CoupledFileAnalysis {
+  file: string;
+  sharedCommits: number;
+  couplingPercent: number;
+}
+
+export interface UnusedExportAnalysis {
+  file: string;
+  exportName: string;
+  kind: 'class' | 'function' | 'const';
+  reason: string;
 }
 
 export interface DuplicationGroupAnalysis {
@@ -165,6 +221,7 @@ export interface HotspotAnalysis {
   complexityScore: number;
   churnScore: number;
   architectureRisk: number;
+  crapScore: number;
   refactorPriority: number;
   priority: 'Low' | 'Medium' | 'High' | 'Very High';
 }

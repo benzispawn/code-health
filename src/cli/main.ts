@@ -10,6 +10,7 @@ import { validateArchitectureCommand } from './commands/validate-architecture.co
 
 export interface ParsedArgs {
   command?: string;
+  positional: string[];
   flags: Record<string, string | boolean>;
 }
 
@@ -25,7 +26,10 @@ export async function runCli(argv: string[]): Promise<void> {
     return;
   }
   if (args.command === 'scan') {
-    await scanCommand(args.flags);
+    await scanCommand({
+      ...args.flags,
+      cwd: args.positional[0] ?? args.flags.cwd,
+    });
     return;
   }
   if (args.command === 'score') {
@@ -63,9 +67,32 @@ export async function runCli(argv: string[]): Promise<void> {
 export function parseArgs(argv: string[]): ParsedArgs {
   const [command, ...rest] = argv;
   if (command?.startsWith('--')) {
-    return { flags: parseFlags(argv) };
+    return { positional: [], flags: parseFlags(argv) };
   }
-  return { command, flags: parseFlags(rest) };
+  return {
+    command,
+    positional: parsePositionals(rest),
+    flags: parseFlags(rest),
+  };
+}
+
+function parsePositionals(args: string[]): string[] {
+  const positionals: string[] = [];
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg.startsWith('--')) {
+      if (
+        !arg.includes('=') &&
+        args[index + 1] &&
+        !args[index + 1].startsWith('--')
+      ) {
+        index += 1;
+      }
+      continue;
+    }
+    positionals.push(arg);
+  }
+  return positionals;
 }
 
 function parseFlags(args: string[]): Record<string, string | boolean> {

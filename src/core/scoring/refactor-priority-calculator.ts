@@ -1,13 +1,20 @@
+import type { CodeHealthConfig } from '../../shared/types/config';
 import type {
   ArchitectureAnalysis,
   FileAnalysis,
+  PackageStabilityAnalysis,
   RefactorRecommendation,
+  UnusedExportAnalysis,
 } from '../../shared/types/project-health';
 import { priorityLabel } from '../git/hotspot-calculator';
+import { calculateEffectiveCoverage } from '../metrics/testability/effective-coverage.metric';
 
 export function createRefactorRecommendations(
   files: FileAnalysis[],
   architecture: ArchitectureAnalysis,
+  packageStability: PackageStabilityAnalysis[] = [],
+  unusedExports: UnusedExportAnalysis[] = [],
+  config?: Pick<CodeHealthConfig, 'thresholds'>,
 ): RefactorRecommendation[] {
   const recommendations: RefactorRecommendation[] = [];
 
@@ -44,6 +51,33 @@ export function createRefactorRecommendations(
         reason: `Fan-out is ${file.metrics.fanOut}`,
       });
     }
+
+    const effectiveCoverage =
+      config === undefined
+        ? file.metrics.lineCoverage
+        : calculateEffectiveCoverage(file, config);
+    const complexity = Math.max(
+      file.metrics.cyclomaticComplexity,
+      file.metrics.cognitiveComplexity,
+    );
+    if (
+      effectiveCoverage !== undefined &&
+      effectiveCoverage <= 70 &&
+      complexity >= 2
+    ) {
+      const crapContext =
+        file.metrics.crapScore === undefined
+          ? ''
+          : `; CRAP score is ${file.metrics.crapScore}`;
+      recommendations.push({
+        file: file.path,
+        type: 'add-tests',
+        priority: priorityLabel(
+          Math.min(100, (70 - effectiveCoverage) * 2 + complexity * 5),
+        ),
+        reason: `Effective coverage is ${effectiveCoverage}% for complexity ${complexity}${crapContext}`,
+      });
+    }
   }
 
   for (const violation of architecture.violations) {
@@ -52,6 +86,39 @@ export function createRefactorRecommendations(
       type: 'fix-architecture',
       priority: violation.severity === 'error' ? 'High' : 'Medium',
       reason: violation.message,
+    });
+  }
+
+  const packageInstabilityThreshold =
+    config?.thresholds.packageInstabilityThreshold ?? 0.8;
+  const packageEfferentCouplingThreshold =
+    config?.thresholds.packageEfferentCouplingThreshold ?? 2;
+
+  for (const pkg of packageStability) {
+    if (
+      pkg.instability >= packageInstabilityThreshold &&
+      pkg.efferentCoupling >= packageEfferentCouplingThreshold
+    ) {
+      recommendations.push({
+        file: pkg.packagePath,
+        type: 'reduce-coupling',
+        priority: priorityLabel(
+          Math.min(
+            100,
+            Math.round(pkg.instability * 50) + pkg.efferentCoupling * 15,
+          ),
+        ),
+        reason: `Package instability is ${pkg.instability} with Ce ${pkg.efferentCoupling} and Ca ${pkg.afferentCoupling}`,
+      });
+    }
+  }
+
+  for (const unusedExport of unusedExports) {
+    recommendations.push({
+      file: unusedExport.file,
+      type: 'reduce-coupling',
+      priority: 'Low',
+      reason: `Unused export candidate: ${unusedExport.exportName} (${unusedExport.kind})`,
     });
   }
 

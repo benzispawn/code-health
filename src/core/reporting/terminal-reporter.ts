@@ -65,11 +65,30 @@ export function formatTerminalSummary(report: ProjectHealthReport): string[] {
     `- Package Cycles: ${report.summary.packageCycleCount} ${formatRating(ratePackageCycles(report.summary.packageCycleCount))}`,
     `- Line Coverage: ${formatPercent(report.summary.averageLineCoverage)} ${formatRating(rateCoverage(report.summary.averageLineCoverage))}`,
     `- Branch Coverage: ${formatPercent(report.summary.averageBranchCoverage)} ${formatRating(rateCoverage(report.summary.averageBranchCoverage))}`,
+    `- Max CRAP: ${formatCrap(report.summary.maxCrapScore)}`,
   );
+
+  lines.push('', 'Unused Export Candidates:');
+  if (report.unusedExports.length === 0) {
+    lines.push('- None');
+  } else {
+    lines.push(
+      ...report.unusedExports
+        .slice(0, 5)
+        .map(
+          (candidate) =>
+            `- ${candidate.file}: ${candidate.exportName} (${candidate.kind})`,
+        ),
+    );
+  }
 
   return lines;
 }
 
 function formatPercent(value: number | undefined): string {
   return value === undefined ? 'not found' : `${value}%`;
+}
+
+function formatCrap(value: number | undefined): string {
+  return value === undefined ? 'not found' : String(value);
 }
