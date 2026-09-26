@@ -284,9 +284,11 @@ function extractClassCohesion(
   instanceFields: string[],
 ) {
   const methodFieldUsage = [
-    ...classDeclaration.getConstructors().map((constructorDeclaration) =>
-      collectConstructorFieldUsage(constructorDeclaration, instanceFields),
-    ),
+    ...classDeclaration
+      .getConstructors()
+      .map((constructorDeclaration) =>
+        collectConstructorFieldUsage(constructorDeclaration, instanceFields),
+      ),
     ...classDeclaration
       .getMethods()
       .map((method) => collectFieldUsage(method, instanceFields)),

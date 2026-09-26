@@ -2,12 +2,10 @@ import path from 'node:path';
 import type {
   ClassDeclaration,
   ExportSpecifier,
-  FunctionDeclaration,
   Project,
   SourceFile,
-  VariableDeclaration,
 } from 'ts-morph';
-import { Node, SyntaxKind } from 'ts-morph';
+import { Node } from 'ts-morph';
 import { relativePosix } from '../../shared/fs/path-utils';
 import type { UnusedExportAnalysis } from '../../shared/types/project-health';
 
@@ -71,17 +69,20 @@ export function analyzeUnusedExports(
           }
 
           const exportName = resolveExportName(item, namedImport);
-          usedKeys.add(
-            candidateKey(relativePosix(cwd, origin), exportName),
-          );
+          usedKeys.add(candidateKey(relativePosix(cwd, origin), exportName));
         }
       }
     }
   }
 
   return [...candidates.values()]
-    .filter((candidate) => !ambiguousFiles.has(path.resolve(cwd, candidate.file)))
-    .filter((candidate) => !usedKeys.has(candidateKey(candidate.file, candidate.exportName)))
+    .filter(
+      (candidate) => !ambiguousFiles.has(path.resolve(cwd, candidate.file)),
+    )
+    .filter(
+      (candidate) =>
+        !usedKeys.has(candidateKey(candidate.file, candidate.exportName)),
+    )
     .sort(
       (left, right) =>
         left.file.localeCompare(right.file) ||
@@ -96,7 +97,10 @@ function collectExportCandidates(
   const file = relativePosix(cwd, sourceFile.getFilePath());
   const candidates: UnusedExportAnalysis[] = [];
 
-  for (const [exportName, declarations] of sourceFile.getExportedDeclarations()) {
+  for (const [
+    exportName,
+    declarations,
+  ] of sourceFile.getExportedDeclarations()) {
     if (exportName === 'default') {
       continue;
     }

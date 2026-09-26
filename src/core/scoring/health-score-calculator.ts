@@ -95,8 +95,7 @@ export function calculateHealthSummary(
       branchCoverageValues.length === 0
         ? undefined
         : Math.round(average(branchCoverageValues)),
-    maxCrapScore:
-      crapScores.length === 0 ? undefined : Math.max(...crapScores),
+    maxCrapScore: crapScores.length === 0 ? undefined : Math.max(...crapScores),
     apiSurfaceSize: files.reduce(
       (total, file) =>
         total +

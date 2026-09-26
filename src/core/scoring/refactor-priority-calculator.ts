@@ -1,6 +1,4 @@
-import type {
-  CodeHealthConfig,
-} from '../../shared/types/config';
+import type { CodeHealthConfig } from '../../shared/types/config';
 import type {
   ArchitectureAnalysis,
   FileAnalysis,
@@ -105,7 +103,10 @@ export function createRefactorRecommendations(
         file: pkg.packagePath,
         type: 'reduce-coupling',
         priority: priorityLabel(
-          Math.min(100, Math.round(pkg.instability * 50) + pkg.efferentCoupling * 15),
+          Math.min(
+            100,
+            Math.round(pkg.instability * 50) + pkg.efferentCoupling * 15,
+          ),
         ),
         reason: `Package instability is ${pkg.instability} with Ce ${pkg.efferentCoupling} and Ca ${pkg.afferentCoupling}`,
       });

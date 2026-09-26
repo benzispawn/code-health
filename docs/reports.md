@@ -79,6 +79,15 @@ Generate JSON:
 code-health report --format json
 ```
 
+To scan another project explicitly, pass a positional root or `--cwd`:
+
+```bash
+code-health scan /path/to/project --json
+code-health scan --cwd /path/to/project --json
+```
+
+The JSON report includes `scan.root`, `scan.generatedAt`, and `scan.scannedFileCount`. These fields make it possible to verify that a report belongs to the intended project before comparing scores.
+
 Default path:
 
 ```txt
@@ -94,16 +103,17 @@ Use JSON for:
 
 Main sections:
 
-| Section | Purpose |
-| --- | --- |
-| `project` | Project metadata |
-| `summary` | Overall score and category scores |
-| `files` | Per-file metrics, API surface counts, coverage, duplication, and scores |
-| `domains` | Domain-level summary |
-| `architecture` | Violations, file cycles, package cycles, dependency graph |
-| `duplication` | Project duplication percent and repeated block locations |
-| `hotspots` | Refactor priority ranking |
-| `recommendations` | Suggested next actions |
+| Section           | Purpose                                                                 |
+| ----------------- | ----------------------------------------------------------------------- |
+| `scan`            | Resolved root, generation timestamp, and scanned file count             |
+| `project`         | Project metadata                                                        |
+| `summary`         | Overall score and category scores                                       |
+| `files`           | Per-file metrics, API surface counts, coverage, duplication, and scores |
+| `domains`         | Domain-level summary                                                    |
+| `architecture`    | Violations, file cycles, package cycles, dependency graph               |
+| `duplication`     | Project duplication percent and repeated block locations                |
+| `hotspots`        | Refactor priority ranking                                               |
+| `recommendations` | Suggested next actions                                                  |
 
 ## Markdown Report
 

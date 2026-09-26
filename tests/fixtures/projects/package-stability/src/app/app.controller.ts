@@ -1,4 +1,4 @@
-import { BillingService } from '../domain/billing.service';
+import type { BillingService } from '../domain/billing.service';
 import { formatCurrency } from '../shared/currency';
 
 export class AppController {

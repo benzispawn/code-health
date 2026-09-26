@@ -1,6 +1,6 @@
 {
   "name": "@rbenzi/code-health",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Spec-driven architecture health CLI for NestJS and TypeScript projects",
   "repository": {
     "type": "git",

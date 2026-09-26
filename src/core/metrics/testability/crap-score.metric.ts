@@ -3,9 +3,7 @@ export interface CrapScoreInput {
   coveragePercent?: number;
 }
 
-export function calculateCrapScore(
-  input: CrapScoreInput,
-): number | undefined {
+export function calculateCrapScore(input: CrapScoreInput): number | undefined {
   if (input.coveragePercent === undefined) {
     return undefined;
   }

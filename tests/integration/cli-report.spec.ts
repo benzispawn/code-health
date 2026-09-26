@@ -40,7 +40,9 @@ describe('code-health report', () => {
     const markdown = fs.readFileSync(reportPath, 'utf8');
     expect(markdown).toContain('# nestjs-project Code Health');
     expect(markdown).toContain('- Max CRAP:');
-    expect(markdown).toContain('| File | Score | LOC | Logical LOC | Comments | Duplication | Fan-in | Fan-out | Depth | Exports | Endpoints | Coverage | CRAP | Coupled Peers |');
+    expect(markdown).toContain(
+      '| File | Score | LOC | Logical LOC | Comments | Duplication | Fan-in | Fan-out | Depth | Exports | Endpoints | Coverage | CRAP | Coupled Peers |',
+    );
   });
 
   it('writes unused export candidate sections conservatively', async () => {

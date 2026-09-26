@@ -7,7 +7,10 @@ import type {
 import { relativePosix } from '../../shared/fs/path-utils';
 import { validateArchitecture } from '../architecture/architecture-validator';
 import { analyzeUnusedExports } from '../dead-code/unused-exports';
-import { buildPackageDependencyGraph, calculateDependencyDepths } from '../architecture/dependency-graph';
+import {
+  buildPackageDependencyGraph,
+  calculateDependencyDepths,
+} from '../architecture/dependency-graph';
 import {
   analyzeChangeCoupling,
   readGitChangeSets,
